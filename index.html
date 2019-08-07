@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+<title>gifcast</title> 
+<link rel="stylesheet" type="text/css" href="style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="lib/xtermjs/xterm.css" />
+<script src="lib/xtermjs/xterm.js"></script>
+<script src="lib/omggif.js"></script>
+</head>
+<body>
+	<!-- Add a spacer div so text doesn't overlap with "Fork me on GitHub" -->
+	<div style="width: 100px; height: 100px; float: right; display: inline-block"></div>
+	<a href="https://github.com/dstein64/gifcast">
+	  <img style="position: absolute; top: 0; right: 0; border: 0;"
+	       src="forkme_right_white_ffffff.png"
+	       alt="Fork me on GitHub">
+	</a>
+	<h1>gifcast</h1>
+	<p>
+	   Select an <a href="https://github.com/asciinema/asciinema">asciinema</a>
+	   cast file, then click <em>Render</em>.
+	</p>
+	<p>
+	   The animated GIF can be saved by using your browser&#8217;s
+	   <em>Save Image As...</em> functionality, invoked by right-clicking the image.
+	</p>
+    <input id="input_file" type="file" accept="application/x-asciicast, .cast">
+    <div id="status">&nbsp;</div>
+	<div id="terminal"></div>
+	<div><img id="tmp" style="max-width: 800px;" src=""/></div>
+	<script src="core.js"></script>
+</body>
+</html>

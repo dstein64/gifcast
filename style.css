@@ -1,0 +1,16 @@
+#status {
+    color: red;
+}
+
+/*
+ *  The following settings make the terminal invisible and not
+ *  affect the layout of the page. 'display: none' does not work
+ *  since the terminal does not get rendered.
+ */
+#terminal {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    opacity: 0;
+    z-index: -1;
+}
