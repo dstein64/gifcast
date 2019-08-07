@@ -18,17 +18,6 @@ of the cast.
 The page is available at
 <https://dstein64.github.io/gifcast/>.
 
-Screenshots
------------
-
-### Selection/Instructions
-
-![Select](screenshots/select.png)
-
-### Rendered
-
-![Rendered](screenshots/rendered.png)
-
 License
 -------
 
