@@ -136,7 +136,7 @@ const quantize = function(pixels) {
 const header_palette_theme = function(header_palette) {
     let colors = header_palette.split(':');
     if (colors.length === 8)
-        colors = colors.concat(colors)
+        colors = colors.concat(colors);
     const theme = {
         black: colors[0],
         red: colors[1],
@@ -154,7 +154,7 @@ const header_palette_theme = function(header_palette) {
         brightPurple: colors[13],
         brightCyan: colors[14],
         brightWhite: colors[15],
-    }
+    };
     return theme;
 };
 
@@ -168,7 +168,7 @@ const render = function(cast) {
         return;
     }
     const header = JSON.parse(lines[0]);
-    if (header.version != 2) {
+    if (header.version !== 2) {
         status('Error loading file');
         return;
     }
@@ -179,7 +179,7 @@ const render = function(cast) {
         if (!line) continue;
         let time, type, data;
         [time, type, data] = JSON.parse(line);
-        if (type != 'o') continue;
+        if (type !== 'o') continue;
         frames.push({
             time: time,
             data: data,
