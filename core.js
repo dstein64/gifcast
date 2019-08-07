@@ -263,9 +263,8 @@ const render = function(cast) {
         const opts = {delay: delay * 100};
         gif.addFrame(0, 0, width, height, indexed_pixels, opts);
         
-        // TODO: REAL STATUS
         percent = 100.0 * (idx + 1) / (frames.length + 1);
-        console.log(percent);
+        document.getElementById('percent').innerText = percent.toFixed(2);
         
         if (idx >= frames.length) {
             // TODO: Put GIF in an overlay
