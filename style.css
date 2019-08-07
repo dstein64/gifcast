@@ -1,6 +1,14 @@
+#input {
+    padding-bottom: 15px;
+}
+
 #rendered {
     max-width: 100%;
     height: auto;
+}
+
+#loading {
+    display: none;
 }
 
 /*

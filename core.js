@@ -145,21 +145,38 @@ const set_progress = function(percent) {
     document.getElementById('percent').innerText = percent.toFixed(2);
 };
 
+const show_loading = function() {
+    document.getElementById('loading').style.display = 'initial';
+};
+
+const hide_loading = function() {
+    document.getElementById('loading').style.display = 'none';
+};
+
+const set_rendered_image = function(src) {
+    document.getElementById('rendered').src = src;
+};
+
 // asciicast file format (version 2) is specified at:
 //   https://github.com/asciinema/asciinema/blob/develop/doc/asciicast-v2.md
 
 const render = function(cast) {
+    set_rendered_image('');
+    show_loading();
+    set_progress(0.0);
     const lines = cast.split(/\r?\n/);
     if (lines.length === 0) {
         alert('Error loading file');
+        hide_loading();
         return;
     }
     const header = JSON.parse(lines[0]);
     if (header.version !== 2) {
         alert('Error loading file');
+        hide_loading();
         return;
     }
-    
+
     let frames = [];
     for (let i = 1; i < lines.length; ++i) {
         const line = lines[i];
@@ -172,16 +189,16 @@ const render = function(cast) {
             data: data,
         });
     }
-    
+
     // Add a delay field.
     for (let i = 1; i < frames.length; ++i) {
         frames[i - 1].delay = frames[i].time - frames[i - 1].time;
     }
     frames[frames.length - 1].delay = 0.0;
-    
+
     const bytes = [];
     const gif = new GifWriter(bytes, 1, 1, {palette: PALETTE, loop: 0});  // loop forever
-    
+
     // Writing text to the xterm.js terminal is asynchronous.
     // To workaround this, iteration is conducted with the
     // onRender callback. Each time the terminal is rendered,
@@ -190,7 +207,7 @@ const render = function(cast) {
     // that is called when the terminal is opened.
 
     let delay = 0.0;
-    
+
     const theme = JSON.parse(JSON.stringify(THEME));
     if ('theme' in header) {
         const header_theme = header.theme;
@@ -205,7 +222,7 @@ const render = function(cast) {
     theme.cursor = theme.cursor || theme.white;
     theme.cursorAccent = theme.cursorAccent || theme.white;
     theme.selection = theme.selection || theme.white;
-    
+
     const config = {
         cols: header.width,
         rows: header.height,
@@ -215,28 +232,28 @@ const render = function(cast) {
         theme: theme,
     };
     const term = new Terminal(config);
-    
+
     let idx = 0;  // index of currently processed frame
     const process = function() {
         term.focus();  // to make cursor visible
         const text_canvas = document.getElementsByClassName('xterm-text-layer')[0];
         const cursor_canvas = document.getElementsByClassName('xterm-cursor-layer')[0];
-        
+
         const canvas = document.createElement('canvas');
         const width = text_canvas.width + 2 * PADDING;
         const height = text_canvas.height + 2 * PADDING;
-        
+
         canvas.width = width;
         canvas.height = height;
         const context = canvas.getContext('2d');
         context.fillStyle = theme.background;
         context.fillRect(0, 0, width, height);
-        
+
         context.drawImage(
             text_canvas, PADDING, PADDING, text_canvas.width, text_canvas.height);
         context.drawImage(
             cursor_canvas, PADDING, PADDING, cursor_canvas.width, cursor_canvas.height);
-        
+
         const data = context.getImageData(0, 0, width, height).data;
         const pixels = [];
         for (let i = 0; i < width * height; ++i) {
@@ -244,29 +261,30 @@ const render = function(cast) {
             const g = data[i * 4 + 1];
             const b = data[i * 4 + 2];
             const color = (r << 16) + (g << 8) + b;
-            pixels[i] = color;            
+            pixels[i] = color;
         }
-        const indexed_pixels = quantize(pixels);        
+        const indexed_pixels = quantize(pixels);
         const opts = {delay: delay * 100};
         gif.addFrame(0, 0, width, height, indexed_pixels, opts);
-        
+
         percent = 100.0 * (idx + 1) / (frames.length + 1);
         set_progress(percent);
-        
+
         if (idx >= frames.length) {
             // TODO: Put GIF in an overlay
             const b64 = base64(bytes);
-            document.getElementById('rendered').src = 'data:image/gif;base64,' + b64;
+            set_rendered_image('data:image/gif;base64,' + b64);
             setTimeout(function() {
                 term.dispose();
             });
+            hide_loading();
             return;
         }
         let frame = frames[idx++];
         delay = frame.delay;
         term.write(frame.data);
     };
-    
+
     term.onRender(process);
     term.open(document.getElementById('terminal'));
 };

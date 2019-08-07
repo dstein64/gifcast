@@ -18,13 +18,13 @@
 	<h1>gifcast</h1>
 	<p>
 	   Select an <a href="https://github.com/asciinema/asciinema">asciinema</a>
-	   cast file, then click <em>Render</em>.
+	   cast file to convert to an animated GIF.
 	</p>
 	<p>
 	   The animated GIF can be saved by using your browser&#8217;s
 	   <em>Save Image As...</em> functionality, invoked by right-clicking the image.
 	</p>
-    <input id="input_file" type="file" accept="application/x-asciicast, .cast">
+    <div id="input"><input id="input_file" type="file" accept="application/x-asciicast, .cast"></div>
 	<div id="terminal"></div>
 	<div><img id="rendered" src=""/></div>
 	<div id="loading"><img src="loader.gif"><br><span id="percent">0.00</span>%</div>
