@@ -1,7 +1,7 @@
 gifcast
 =======
 
-*gifcast* is a web page that can convert
+*gifcast* is a web page that converts
 [asciinema](https://github.com/asciinema/asciinema) casts to animated GIFs.
 
 The code runs fully in the browser. That is, there are no server-side calls
