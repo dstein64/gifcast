@@ -1,7 +1,8 @@
 gifcast
 =======
 
-*gifcast* is a web page that can convert asciinema casts to animated GIFs.
+*gifcast* is a web page that can convert
+[asciinema](https://github.com/asciinema/asciinema) casts to animated GIFs.
 
 The code runs fully in the browser. That is, there are no server-side calls
 to process the cast and/or convert to animated GIF. The implementation is in
@@ -34,3 +35,11 @@ License
 The source code has an [MIT License](https://en.wikipedia.org/wiki/MIT_License).
 
 See [LICENSE](LICENSE).
+
+Acknowledgments
+---------------
+
+*gifcast* depends on code from:
+
+1. [xterm.js](https://github.com/xtermjs/xterm.js)
+2. [omggif](https://github.com/deanm/omggif)
