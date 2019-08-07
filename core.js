@@ -158,6 +158,10 @@ const header_palette_theme = function(header_palette) {
     return theme;
 };
 
+const set_progress = function(percent) {
+    document.getElementById('percent').innerText = percent.toFixed(2);
+};
+
 // asciicast file format (version 2) is specified at:
 //   https://github.com/asciinema/asciinema/blob/develop/doc/asciicast-v2.md
 
@@ -264,7 +268,7 @@ const render = function(cast) {
         gif.addFrame(0, 0, width, height, indexed_pixels, opts);
         
         percent = 100.0 * (idx + 1) / (frames.length + 1);
-        document.getElementById('percent').innerText = percent.toFixed(2);
+        set_progress(percent);
         
         if (idx >= frames.length) {
             // TODO: Put GIF in an overlay
