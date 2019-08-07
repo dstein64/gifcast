@@ -1,20 +1,3 @@
-
-// TODO: REMOVE TRAILING WHITESPACE
-
-let cur_timer = null;
-const status = function(message, time) {
-    time = (typeof time === 'undefined') ? 1500 : time;
-    const status = document.getElementById('status');
-    if (cur_timer)
-        clearTimeout(cur_timer);
-    status.innerText = message;
-    const timer = setTimeout(function() {
-        status.innerHTML = '&nbsp;';
-        cur_timer = null;
-    }, time);
-    cur_timer = timer;
-};
-
 const base64 = function(buffer) {
     const bytes = new Uint8Array(buffer);
     const chars = [];
@@ -168,12 +151,12 @@ const set_progress = function(percent) {
 const render = function(cast) {
     const lines = cast.split(/\r?\n/);
     if (lines.length === 0) {
-        status('Error loading file');
+        alert('Error loading file');
         return;
     }
     const header = JSON.parse(lines[0]);
     if (header.version !== 2) {
-        status('Error loading file');
+        alert('Error loading file');
         return;
     }
     
@@ -273,7 +256,7 @@ const render = function(cast) {
         if (idx >= frames.length) {
             // TODO: Put GIF in an overlay
             const b64 = base64(bytes);
-            document.getElementById('tmp').src = 'data:image/gif;base64,' + b64;
+            document.getElementById('rendered').src = 'data:image/gif;base64,' + b64;
             setTimeout(function() {
                 term.dispose();
             });
@@ -291,7 +274,6 @@ const render = function(cast) {
 document.getElementById('input_file').onchange = function(e) {
     const files = e.currentTarget.files;
     if (!FileReader || !files || !files.length) {
-        status('Error loading file');
         return;
     }
     const reader = new FileReader();

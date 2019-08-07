@@ -1,5 +1,6 @@
-#status {
-    color: red;
+#rendered {
+    max-width: 100%;
+    height: auto;
 }
 
 /*
