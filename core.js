@@ -204,7 +204,7 @@ const render = function(cast) {
         return;
     }
 
-    let frames = [];
+    let frames = [{time: 0.0, data: ''}];
     for (let i = 1; i < lines.length; ++i) {
         const line = lines[i];
         if (!line) continue;
@@ -233,8 +233,6 @@ const render = function(cast) {
     // for processing. Iteration starts with the initial onRender
     // that is called when the terminal is opened.
 
-    let delay = 0.0;
-
     const theme = JSON.parse(JSON.stringify(THEME));
     if ('theme' in header) {
         const header_theme = header.theme;
@@ -260,7 +258,10 @@ const render = function(cast) {
     };
     const term = new Terminal(config);
 
-    let idx = 0;  // index of currently processed frame
+    console.log(frames.length);
+
+    let idx = 0;  // index of frame being processed
+    let gif_idx = -1;  // index of the last frame added to the GIF
     const process = function() {
         term.focus();  // to make cursor visible
         const text_canvas = document.getElementsByClassName('xterm-text-layer')[0];
@@ -291,13 +292,30 @@ const render = function(cast) {
             pixels[i] = color;
         }
         const indexed_pixels = quantize(pixels);
-        const opts = {delay: delay * 100};
-        gif.addFrame(0, 0, width, height, indexed_pixels, opts);
+
+        let delay = frames[idx].delay;
+        const time = frames[idx].time;
+
+        // Add time from frames that were skipped in the GIF
+        if (gif_idx >= 0) {
+            delay += time - (frames[gif_idx].time + frames[gif_idx].delay);
+        }
+
+        // Only add frames to GIF when:
+        //   1) frame will show for more than a hundredth of a second
+        //   2) it's the final frame
+        if (delay >= .01 || idx >= frames.length) {
+            // omggif expects centi-seconds
+            const gif_delay = delay * 100;
+            const opts = {delay: gif_delay};
+            gif.addFrame(0, 0, width, height, indexed_pixels, opts);
+            gif_idx = idx;
+        }
 
         percent = 100.0 * (idx + 1) / (frames.length + 1);
         set_progress(percent);
 
-        if (idx >= frames.length) {
+        if (idx >= frames.length - 1) {
             // TODO: Put GIF in an overlay
             const b64 = base64(bytes);
             const src = 'data:image/gif;base64,' + b64;
@@ -307,8 +325,8 @@ const render = function(cast) {
             });
             return;
         }
-        let frame = frames[idx++];
-        delay = frame.delay;
+
+        let frame = frames[++idx];
         term.write(frame.data);
     };
 
