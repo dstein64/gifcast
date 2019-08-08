@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>gifcast</title> 
+<title>gifcast</title>
 <link rel="stylesheet" type="text/css" href="style.css">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="lib/xtermjs/xterm.css" />
@@ -26,8 +26,8 @@
 	</p>
     <div id="input"><input id="input_file" type="file" accept="application/x-asciicast, .cast"></div>
 	<div id="terminal"></div>
+	<div id="loading"><progress id="progress" max="100.0" value="0"></progress></div>
 	<div><img id="rendered" src=""/></div>
-	<div id="loading"><img src="loader.gif"><br><span id="percent">0.00</span>%</div>
 	<script src="core.js"></script>
 </body>
 </html>

@@ -142,7 +142,8 @@ const header_palette_theme = function(header_palette) {
 };
 
 const set_progress = function(percent) {
-    document.getElementById('percent').innerText = percent.toFixed(2);
+    // Use floor so 100% won't show prematurely.
+    document.getElementById('progress').value = Math.floor(percent);
 };
 
 const show_loading = function() {

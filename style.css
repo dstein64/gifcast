@@ -2,13 +2,15 @@
     padding-bottom: 15px;
 }
 
-#rendered {
-    max-width: 100%;
-    height: auto;
-}
-
 #loading {
     display: none;
+}
+
+#progress {
+    text-align: center;
+}
+#progress:after {
+    content: attr(value)'%';
 }
 
 /*
@@ -22,4 +24,9 @@
     right: 0;
     opacity: 0;
     z-index: -1;
+}
+
+#rendered {
+    max-width: 100%;
+    height: auto;
 }
