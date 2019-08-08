@@ -11,10 +11,21 @@ JavaScript.
 How To Use
 ----------
 
-To convert an asciinema, launch a new recording (`asciinema rec`) and record your session. When you terminate your session (`Ctrl-D`) the prompt will ask if you would like to upload to asciinema or save to disk--choose save to disk as `/tmp/temp_name.cast`. To convert an asciinema cast to an animated GIF, navigate to index.html, and load the cast located in your `/tmp` folder. The time to process increases with the size and duration of the cast.
+*gifcast* expects the asciinema cast to have a `.cast` extension. See below for
+instructions on recording an asciinema cast.
 
-The page is available at
+To convert an asciinema cast to an animated GIF, navigate to index.html, and load
+the cast. The time to process increases with the screen size and duration of the
+cast.
+
+*gifcast* is available at
 <https://dstein64.github.io/gifcast/>.
+
+### Recording a Cast
+
+To record an asciinema cast, launch a new recording (`asciinema rec`) to record
+your session. Upon terminating your session (`Ctrl-D`), choose to save the cast
+to disk, using a `.cast` extension.
 
 License
 -------
