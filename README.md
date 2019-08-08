@@ -23,6 +23,8 @@ cast.
 
 ### Recording a Cast
 
+Recording requires the `asciinema` program, which runs independently of *gifcast*.
+
 To record an asciinema cast, launch a new recording (`asciinema rec`) to record
 your session. Upon terminating your session (`Ctrl-D`), choose to save the cast
 to disk, using a `.cast` extension.
