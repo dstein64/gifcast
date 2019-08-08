@@ -211,10 +211,10 @@ const render = function(cast) {
         let time, type, data;
         [time, type, data] = JSON.parse(line);
         if (type !== 'o') continue;
-        frames.push({
+        frames[i] = {
             time: time,
             data: data,
-        });
+        };
     }
 
     // Add a delay field.
