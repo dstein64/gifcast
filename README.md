@@ -32,6 +32,13 @@ the session with `Ctrl-D`.
 $ asciinema rec PATH/FILENAME.cast
 ```
 
+Example
+-------
+
+The animated GIF below was generated with *gifcast*.
+
+![Example](example.gif)
+
 License
 -------
 
