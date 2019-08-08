@@ -141,6 +141,14 @@ const header_palette_theme = function(header_palette) {
     return theme;
 };
 
+const enable_file_selector = function() {
+    document.getElementById('file_selector').disabled = false;
+};
+
+const disable_file_selector = function() {
+    document.getElementById('file_selector').disabled = true;
+};
+
 const set_progress = function(percent) {
     // Use floor so 100% won't show prematurely.
     document.getElementById('progress').value = Math.floor(percent);
@@ -158,23 +166,41 @@ const set_rendered_image = function(src) {
     document.getElementById('rendered').src = src;
 };
 
+// DOM manipulations before rendering (e.g., show loading bar)
+const init_render = function() {
+    set_rendered_image('');
+    show_loading();
+    set_progress(0.0);
+    disable_file_selector();
+};
+
+// DOM manipulations after successful rendering (e.g., hide loading bar)
+const end_render_success = function(img_src) {
+    set_rendered_image(img_src);
+    hide_loading();
+    enable_file_selector();
+};
+
+// Alert and DOM manipulations after failed rendering
+const end_render_fail = function(message) {
+    alert(message);
+    hide_loading();
+    enable_file_selector();
+};
+
 // asciicast file format (version 2) is specified at:
 //   https://github.com/asciinema/asciinema/blob/develop/doc/asciicast-v2.md
 
 const render = function(cast) {
-    set_rendered_image('');
-    show_loading();
-    set_progress(0.0);
+    init_render();
     const lines = cast.split(/\r?\n/);
     if (lines.length === 0) {
-        alert('Error loading file');
-        hide_loading();
+        end_render_fail('Error loading file');
         return;
     }
     const header = JSON.parse(lines[0]);
     if (header.version !== 2) {
-        alert('Error loading file');
-        hide_loading();
+        end_render_fail('Error loading file');
         return;
     }
 
@@ -274,11 +300,11 @@ const render = function(cast) {
         if (idx >= frames.length) {
             // TODO: Put GIF in an overlay
             const b64 = base64(bytes);
-            set_rendered_image('data:image/gif;base64,' + b64);
+            const src = 'data:image/gif;base64,' + b64;
+            end_render_success(src);
             setTimeout(function() {
                 term.dispose();
             });
-            hide_loading();
             return;
         }
         let frame = frames[idx++];
@@ -290,7 +316,7 @@ const render = function(cast) {
     term.open(document.getElementById('terminal'));
 };
 
-document.getElementById('input_file').onchange = function(e) {
+document.getElementById('file_selector').onchange = function(e) {
     const files = e.currentTarget.files;
     if (!FileReader || !files || !files.length) {
         return;
