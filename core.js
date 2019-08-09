@@ -238,9 +238,10 @@ const merge_frames = function(frames) {
 const render = function(cast) {
     init_render();
     const lines = cast.split(/\r?\n/);
+    let header = null;
     try {
         if (lines.length === 0) throw 'Invalid file';
-        const header = JSON.parse(lines[0]);
+        header = JSON.parse(lines[0]);
         if (header.version !== 2) throw 'Invalid version'
     } catch(err) {
         end_render_fail('Error loading asciinema cast file');
