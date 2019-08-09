@@ -261,7 +261,9 @@ const render = function(cast) {
     console.log(frames.length);
 
     let idx = 0;  // index of frame being processed
-    let gif_idx = -1;  // index of the last frame added to the GIF
+    // index of the last frame added to the GIF (some frames skipped)
+    // (not necessarily idx - 1, since some frames are skipped)
+    let gif_idx = -1;
     const process = function() {
         term.focus();  // to make cursor visible
         const text_canvas = document.getElementsByClassName('xterm-text-layer')[0];
