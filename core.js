@@ -188,19 +188,16 @@ const end_render_fail = function(message) {
     enable_file_selector();
 };
 
-// Extract frames from the lines of an asciinema cast file.
-const extract_frames = function(lines) {
+// Extract frames from the asciinema cast file events.
+const extract_frames = function(events) {
     let frames = [{time: 0.0, data: ''}];
-    for (let i = 1; i < lines.length; ++i) {
-        const line = lines[i];
-        if (!line) continue;
-        let time, type, data;
-        [time, type, data] = JSON.parse(line);
+    for (let i = 0; i < events.length; ++i) {
+        [time, type, data] = events[i];
         if (type !== 'o') continue;
-        frames[i] = {
+        frames.push({
             time: time,
             data: data,
-        };
+        });
     }
     // Add a delay field.
     for (let i = 1; i < frames.length; ++i) {
@@ -232,23 +229,46 @@ const merge_frames = function(frames) {
     return merged;
 };
 
+// Parse a cast file. Return an object with a header and a list of events.
+// Includes error-checking.
+const parse_cast = function(cast) {
+    const lines = cast.split(/\r?\n/);
+    if (lines.length === 0) throw Error('Invalid file.');
+    let header = null;
+    try {
+        header = JSON.parse(lines[0]);  // throws a SyntaxError
+    } catch(e) {
+        throw Error('Error parsing JSON.')
+    }
+    if (header.version !== 2) throw Error('gifcast only supports asciinema cast version 2.');
+    const events = [];
+    for (let i = 1; i < lines.length; ++i) {
+        const line = lines[i];
+        if (!line) continue;
+        try {
+            events.push(JSON.parse(line));
+        } catch(e) {
+            throw Error('Error parsing JSON.');
+        }
+    }
+    const output = {header: header, events: events};
+    return output;
+};
+
 // asciicast file format (version 2) is specified at:
 //   https://github.com/asciinema/asciinema/blob/develop/doc/asciicast-v2.md
 
 const render = function(cast) {
     init_render();
-    const lines = cast.split(/\r?\n/);
-    let header = null;
+    let header, events;
     try {
-        if (lines.length === 0) throw 'Invalid file';
-        header = JSON.parse(lines[0]);
-        if (header.version !== 2) throw 'Invalid version'
-    } catch(err) {
-        end_render_fail('Error loading asciinema cast file');
+        ({header, events} = parse_cast(cast));
+    } catch(e) {
+        end_render_fail(e.message);
         return;
     }
 
-    let frames = extract_frames(lines);
+    let frames = extract_frames(events);
     frames = merge_frames(frames);
 
     const bytes = [];
