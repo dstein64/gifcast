@@ -248,6 +248,10 @@ const render = function(cast) {
     theme.cursorAccent = theme.cursorAccent || theme.white;
     theme.selection = theme.selection || theme.white;
 
+    // xtermjs scales the canvas depending on devicePixelRatio. Adjust for this so
+    // that the generated GIF size is independent of devicePixelRatio.
+    const fontSize = 30 / window.devicePixelRatio;  // non-integer values seems to work
+
     const config = {
         cols: header.width,
         rows: header.height,
@@ -255,6 +259,7 @@ const render = function(cast) {
         cursorBlink: false,
         allowTransparency: false,
         theme: theme,
+        fontSize: fontSize,
     };
     const term = new Terminal(config);
 
