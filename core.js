@@ -252,7 +252,8 @@ const render = function(cast) {
     frames = merge_frames(frames);
 
     const bytes = [];
-    const gif = new GifWriter(bytes, 1, 1, {palette: PALETTE, loop: 0});  // loop forever
+    // This is initialized later, when we have the actual dimensions available.
+    let gif = null;
 
     // Writing text to the xterm.js terminal is asynchronous.
     // To workaround this, iteration is conducted with the
@@ -300,6 +301,12 @@ const render = function(cast) {
         const canvas = document.createElement('canvas');
         const width = text_canvas.width + 2 * PADDING;
         const height = text_canvas.height + 2 * PADDING;
+
+        if (gif === null) {
+            // Set 'loop' to 0 to continuously loop
+            const gopts = {palette: PALETTE, loop: 0};
+            gif = new GifWriter(bytes, width, height, gopts);
+        }
 
         canvas.width = width;
         canvas.height = height;
