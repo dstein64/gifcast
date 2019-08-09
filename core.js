@@ -188,6 +188,50 @@ const end_render_fail = function(message) {
     enable_file_selector();
 };
 
+// Extract frames from the lines of an asciinema cast file.
+const extract_frames = function(lines) {
+    let frames = [{time: 0.0, data: ''}];
+    for (let i = 1; i < lines.length; ++i) {
+        const line = lines[i];
+        if (!line) continue;
+        let time, type, data;
+        [time, type, data] = JSON.parse(line);
+        if (type !== 'o') continue;
+        frames[i] = {
+            time: time,
+            data: data,
+        };
+    }
+    // Add a delay field.
+    for (let i = 1; i < frames.length; ++i) {
+        frames[i - 1].delay = frames[i].time - frames[i - 1].time;
+    }
+    frames[frames.length - 1].delay = 0.0;
+    return frames;
+};
+
+// Merge frames that are less than a hundredth of a second.
+// The reasons for this are 1) to satisfy GIF specs, 2) speed
+// processing time, and 3) allow for more accurate playback
+// speed (it seems that times less than .01 second playback
+// for longer than they're supposed to, probably due to GIF
+// specs).
+const merge_frames = function(frames) {
+    if (frames.length === 0) return frames;
+    frames.reverse();
+    const merged = [];
+    while (frames.length > 0) {
+        merged.push(frames.pop());
+        while (merged[merged.length - 1].delay < .01 && frames.length > 0) {
+            const short = merged[merged.length - 1];
+            const addition = frames.pop();
+            short.data += addition.data;
+            short.delay += addition.delay;
+        }
+    }
+    return merged;
+};
+
 // asciicast file format (version 2) is specified at:
 //   https://github.com/asciinema/asciinema/blob/develop/doc/asciicast-v2.md
 
@@ -204,24 +248,8 @@ const render = function(cast) {
         return;
     }
 
-    let frames = [{time: 0.0, data: ''}];
-    for (let i = 1; i < lines.length; ++i) {
-        const line = lines[i];
-        if (!line) continue;
-        let time, type, data;
-        [time, type, data] = JSON.parse(line);
-        if (type !== 'o') continue;
-        frames[i] = {
-            time: time,
-            data: data,
-        };
-    }
-
-    // Add a delay field.
-    for (let i = 1; i < frames.length; ++i) {
-        frames[i - 1].delay = frames[i].time - frames[i - 1].time;
-    }
-    frames[frames.length - 1].delay = 0.0;
+    let frames = extract_frames(lines);
+    frames = merge_frames(frames);
 
     const bytes = [];
     const gif = new GifWriter(bytes, 1, 1, {palette: PALETTE, loop: 0});  // loop forever
@@ -263,12 +291,7 @@ const render = function(cast) {
     };
     const term = new Terminal(config);
 
-    console.log(frames.length);
-
     let idx = 0;  // index of frame being processed
-    // index of the last frame added to the GIF (some frames skipped)
-    // (not necessarily idx - 1, since some frames are skipped)
-    let gif_idx = -1;
     const process = function() {
         term.focus();  // to make cursor visible
         const text_canvas = document.getElementsByClassName('xterm-text-layer')[0];
@@ -303,21 +326,10 @@ const render = function(cast) {
         let delay = frames[idx].delay;
         const time = frames[idx].time;
 
-        // Add time from frames that were skipped in the GIF
-        if (gif_idx >= 0) {
-            delay += time - (frames[gif_idx].time + frames[gif_idx].delay);
-        }
-
-        // Only add frames to GIF when:
-        //   1) frame will show for more than a hundredth of a second
-        //   2) it's the final frame
-        if (delay >= .01 || idx >= frames.length) {
-            // omggif expects centi-seconds
-            const gif_delay = delay * 100;
-            const opts = {delay: gif_delay};
-            gif.addFrame(0, 0, width, height, indexed_pixels, opts);
-            gif_idx = idx;
-        }
+        // omggif expects centi-seconds
+        const gif_delay = delay * 100;
+        const opts = {delay: gif_delay};
+        gif.addFrame(0, 0, width, height, indexed_pixels, opts);
 
         percent = 100.0 * (idx + 1) / (frames.length + 1);
         set_progress(percent);
