@@ -37,7 +37,7 @@ Example
 
 The animated GIF below was generated with *gifcast*.
 
-![Example](example.gif)
+![Example](example.gif | width=800)
 
 License
 -------
