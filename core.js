@@ -379,9 +379,11 @@ const render = function(cast) {
     term.onRender(process);
     const terminal = document.getElementById('terminal');
     term.open(terminal);
-    // Disable the textarea so that a screen keyboard doesn't pop-up on mobile devices.
-    const selector = '#terminal > div > div.xterm-screen > div > textarea';
-    terminal.querySelector(selector).disabled = true;
+    // Disable <textarea> so that a screen keyboard doesn't pop-up on mobile devices.
+    const textareas = terminal.getElementsByTagName('textarea');
+    for (let i = 0; i < textareas.length; ++i) {
+        textareas[i].disabled = true;
+    }
 };
 
 document.getElementById('file_selector').onchange = function(e) {
