@@ -379,10 +379,10 @@ const render = function(cast) {
     term.onRender(process);
     const terminal = document.getElementById('terminal');
     term.open(terminal);
-    // Disable <textarea> so that a screen keyboard doesn't pop-up on mobile devices.
+    // Set <textarea readonly> so that a screen keyboard doesn't pop-up on mobile devices.
     const textareas = terminal.getElementsByTagName('textarea');
     for (let i = 0; i < textareas.length; ++i) {
-        textareas[i].disabled = true;
+        textareas[i].readOnly = true;
     }
 };
 
