@@ -141,31 +141,6 @@ const header_palette_theme = function(header_palette) {
     return theme;
 };
 
-const enable_file_selector = function() {
-    document.getElementById('file_selector').disabled = false;
-};
-
-const disable_file_selector = function() {
-    document.getElementById('file_selector').disabled = true;
-};
-
-const set_progress = function(percent) {
-    // Use floor so 100% won't show prematurely.
-    document.getElementById('progress').value = Math.floor(percent);
-};
-
-const show_loading = function() {
-    document.getElementById('loading').style.display = 'initial';
-};
-
-const hide_loading = function() {
-    document.getElementById('loading').style.display = 'none';
-};
-
-const set_rendered_image = function(src) {
-    document.getElementById('rendered').src = src;
-};
-
 // Extract frames from the asciinema cast file events.
 const extract_frames = function(events) {
     let frames = [{time: 0.0, data: ''}];
@@ -376,6 +351,31 @@ function Renderer(parent) {
 
     return this;
 }
+
+const enable_file_selector = function() {
+    document.getElementById('file_selector').disabled = false;
+};
+
+const disable_file_selector = function() {
+    document.getElementById('file_selector').disabled = true;
+};
+
+const set_progress = function(percent) {
+    // Use floor so 100% won't show prematurely.
+    document.getElementById('progress').value = Math.floor(percent);
+};
+
+const show_loading = function() {
+    document.getElementById('loading').style.display = 'initial';
+};
+
+const hide_loading = function() {
+    document.getElementById('loading').style.display = 'none';
+};
+
+const set_rendered_image = function(src) {
+    document.getElementById('rendered').src = src;
+};
 
 const renderer = Renderer(document.getElementById('terminal'));
 renderer.oninit = function() {
