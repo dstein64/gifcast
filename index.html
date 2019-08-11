@@ -8,30 +8,48 @@
 <script src="lib/omggif.js"></script>
 </head>
 <body>
-	<!-- Add a spacer div so text doesn't overlap with "Fork me on GitHub" -->
-	<div style="width: 100px; height: 100px; float: right; display: inline-block"></div>
-	<a href="https://github.com/dstein64/gifcast">
-	  <img style="position: absolute; top: 0; right: 0; border: 0;"
-	       src="forkme_right_white_ffffff.png"
-	       alt="Fork me on GitHub">
-	</a>
-	<h1>gifcast</h1>
-	<p>
-	   Select an <a href="https://github.com/asciinema/asciinema">asciinema</a>
-	   cast file to convert to an animated GIF.
-	</p>
-	<p>
-	   The animated GIF can be saved by using your browser&#8217;s
-	   <em>Save Image As...</em> functionality, invoked by right-clicking the image.
-	</p>
-    <div id="input">
-		<form autocomplete="off">
-			<input id="file_selector" type="file" accept="application/x-asciicast, .cast" value="">
-		</form>
-	</div>
-	<div id="terminal"></div>
-	<div id="loading"><progress id="progress" max="100.0" value="0"></progress></div>
-	<div><img id="rendered" src=""/></div>
-	<script src="core.js"></script>
+    <!-- Add a spacer div so text doesn't overlap with "Fork me on GitHub" -->
+    <div style="width: 100px; height: 100px; float: right; display: inline-block"></div>
+    <a href="https://github.com/dstein64/gifcast">
+    <img style="position: absolute; top: 0; right: 0; border: 0;"
+         src="forkme_right_white_ffffff.png"
+         alt="Fork me on GitHub">
+    </a>
+    <h1>gifcast</h1>
+    <p>
+        Select an <a href="https://github.com/asciinema/asciinema">asciinema</a>
+        cast file, select a size, then click <em>Render</em> to generate an animated GIF.
+    </p>
+    <p>
+        A larger size will result in a higher-resolution GIF.
+    </p>
+    <p>
+        The animated GIF can be saved by using your browser&#8217;s
+        <em>Save Image As...</em> functionality, invoked by right-clicking the image.
+    </p>
+    <p>
+        Large images are scaled down to fit on the screen. Saving retains the full
+        resolution.
+    </p>
+    <form autocomplete="off">
+        <fieldset id="fieldset">
+            <label for="size">size: </label>
+            <select id="size">
+                <option value="10">extra small</option>
+                <option value="15">small</option>
+                <option value="20" selected="selected">medium</option>
+                <option value="25">large</option>
+                <option value="30">extra large</option>
+            </select>
+            &emsp;
+            <input id="file_selector" type="file" accept="application/x-asciicast, .cast" value="">
+            <br><br>
+            <button id="render_button" disabled>Render</button>
+        </fieldset>
+    </form>
+    <div id="terminal"></div>
+    <div id="loading"><progress id="progress" max="100" value="0"></progress></div>
+    <div><img id="rendered" src=""/></div>
+    <script src="core.js"></script>
 </body>
 </html>

@@ -1,5 +1,6 @@
-#input {
-    padding-bottom: 15px;
+fieldset {
+    border: 0;
+    padding: 0;
 }
 
 #loading {

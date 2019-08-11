@@ -14,9 +14,8 @@ How To Use
 *gifcast* expects the asciinema cast to have a `.cast` extension. See below for
 instructions on recording an asciinema cast.
 
-To convert an asciinema cast to an animated GIF, navigate to index.html, and load
-the cast. The time to process increases with the screen size and duration of the
-cast.
+To convert an asciinema cast to an animated GIF, navigate to index.html, load
+the cast, select a size, and click *Render*.
 
 *gifcast* is available at
 <https://dstein64.github.io/gifcast/>.

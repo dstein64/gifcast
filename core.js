@@ -1,3 +1,7 @@
+// *************************************************
+// * Utils
+// *************************************************
+
 const base64 = function(buffer) {
     const bytes = new Uint8Array(buffer);
     const chars = [];
@@ -7,8 +11,12 @@ const base64 = function(buffer) {
     return btoa(chars.join(''));
 };
 
-// Amount of padding in pixels around terminal.
-const PADDING = 10;
+// *************************************************
+// * Core
+// *************************************************
+
+// Multiple of size to determine padding in pixels.
+const PADDING_FACTOR = 0.5;
 
 // TODO: Use a separate palette for each frame, based on the colors in the frame.
 //       This will still require quantization to reduce the number of colors to
@@ -223,7 +231,7 @@ function Renderer(parent) {
     // Callback after failed rendering
     this.onerror = function(message) {};
 
-    this.render = function(cast) {
+    this.render = function(cast, size) {
         this.oninit();
         let header, events;
         try {
@@ -264,7 +272,7 @@ function Renderer(parent) {
 
         // xtermjs scales the canvas depending on devicePixelRatio. Adjust for this so
         // that the generated GIF size is independent of devicePixelRatio.
-        const fontSize = 30 / window.devicePixelRatio;  // non-integer values seems to work
+        const fontSize = size / window.devicePixelRatio;  // non-integer values seems to work
 
         const config = {
             cols: header.width,
@@ -283,9 +291,11 @@ function Renderer(parent) {
             const text_canvas = this.parent.getElementsByClassName('xterm-text-layer')[0];
             const cursor_canvas = this.parent.getElementsByClassName('xterm-cursor-layer')[0];
 
+            const padding = Math.ceil(PADDING_FACTOR * size);
+
             const canvas = this.parent.ownerDocument.createElement('canvas');
-            const width = text_canvas.width + 2 * PADDING;
-            const height = text_canvas.height + 2 * PADDING;
+            const width = text_canvas.width + 2 * padding;
+            const height = text_canvas.height + 2 * padding;
 
             if (gif === null) {
                 // Set 'loop' to 0 to continuously loop
@@ -300,9 +310,9 @@ function Renderer(parent) {
             context.fillRect(0, 0, width, height);
 
             context.drawImage(
-                text_canvas, PADDING, PADDING, text_canvas.width, text_canvas.height);
+                text_canvas, padding, padding, text_canvas.width, text_canvas.height);
             context.drawImage(
-                cursor_canvas, PADDING, PADDING, cursor_canvas.width, cursor_canvas.height);
+                cursor_canvas, padding, padding, cursor_canvas.width, cursor_canvas.height);
 
             const data = context.getImageData(0, 0, width, height).data;
             const pixels = [];
@@ -323,7 +333,7 @@ function Renderer(parent) {
             const opts = {delay: gif_delay};
             gif.addFrame(0, 0, width, height, indexed_pixels, opts);
 
-            const percent = 100.0 * (idx + 1) / (frames.length + 1);
+            const percent = 100.0 * (idx + 1) / frames.length;
             set_progress(percent);
 
             if (idx >= frames.length - 1) {
@@ -352,12 +362,24 @@ function Renderer(parent) {
     return this;
 }
 
-const enable_file_selector = function() {
-    document.getElementById('file_selector').disabled = false;
+// *************************************************
+// * DOM Manipulation
+// *************************************************
+
+const get_size = function() {
+    return Number.parseInt(document.getElementById('size').value);
 };
 
-const disable_file_selector = function() {
-    document.getElementById('file_selector').disabled = true;
+// Using a <fieldset> provides a way to enable and disable all form inputs
+// and buttons together.
+const enable_fieldset = function(enabled) {
+    if (enabled === undefined) enabled = true;
+    document.getElementById('fieldset').disabled = !enabled;
+};
+
+const enable_render_button = function(enabled) {
+    if (enabled === undefined) enabled = true;
+    document.getElementById('render_button').disabled = !enabled;
 };
 
 const set_progress = function(percent) {
@@ -382,28 +404,37 @@ renderer.oninit = function() {
     set_rendered_image('');
     show_loading();
     set_progress(0.0);
-    disable_file_selector();
+    enable_fieldset(false);
 };
 renderer.onsuccess = function(img_src) {
     // TODO: Put GIF in an overlay
     set_rendered_image(img_src);
     hide_loading();
-    enable_file_selector();
+    enable_fieldset();
 };
 renderer.onerror = function(message) {
     alert(message);
     hide_loading();
-    enable_file_selector();
+    enable_fieldset();
 };
 
 document.getElementById('file_selector').onchange = function(e) {
     const files = e.currentTarget.files;
+    const enabled = FileReader && files && files.length > 0;
+    enable_render_button(enabled);
+};
+
+document.getElementById('render_button').onclick = function(e) {
+    const file_selector = document.getElementById('file_selector');
+    const files = file_selector.files;
     if (!FileReader || !files || !files.length) {
-        return;
+        alert('Error loading file.');
+        return false;
     }
     const reader = new FileReader();
     reader.onload = function() {
-        renderer.render(reader.result);
+        renderer.render(reader.result, get_size());
     };
     reader.readAsText(files[0]);
+    return false;
 };
