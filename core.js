@@ -166,28 +166,6 @@ const set_rendered_image = function(src) {
     document.getElementById('rendered').src = src;
 };
 
-// DOM manipulations before rendering (e.g., show loading bar)
-const init_render = function() {
-    set_rendered_image('');
-    show_loading();
-    set_progress(0.0);
-    disable_file_selector();
-};
-
-// DOM manipulations after successful rendering (e.g., hide loading bar)
-const end_render_success = function(img_src) {
-    set_rendered_image(img_src);
-    hide_loading();
-    enable_file_selector();
-};
-
-// Alert and DOM manipulations after failed rendering
-const end_render_fail = function(message) {
-    alert(message);
-    hide_loading();
-    enable_file_selector();
-};
-
 // Extract frames from the asciinema cast file events.
 const extract_frames = function(events) {
     let frames = [{time: 0.0, data: ''}];
@@ -258,132 +236,164 @@ const parse_cast = function(cast) {
 // asciicast file format (version 2) is specified at:
 //   https://github.com/asciinema/asciinema/blob/develop/doc/asciicast-v2.md
 
-const render = function(cast) {
-    init_render();
-    let header, events;
-    try {
-        ({header, events} = parse_cast(cast));
-    } catch(e) {
-        end_render_fail(e.message);
-        return;
-    }
+function Renderer(parent) {
+    this.parent = parent;
 
-    let frames = extract_frames(events);
-    frames = merge_frames(frames);
+    // Callback before rendering
+    this.oninit = function() {};
 
-    const bytes = [];
-    // This is initialized later, when we have the actual dimensions available.
-    let gif = null;
+    // Callback after successful rendering
+    this.onsuccess = function(img_src) {};
 
-    // Writing text to the xterm.js terminal is asynchronous.
-    // To workaround this, iteration is conducted with the
-    // onRender callback. Each time the terminal is rendered,
-    // the GIF is updated, and another frame (more text) is pushed
-    // for processing. Iteration starts with the initial onRender
-    // that is called when the terminal is opened.
+    // Callback after failed rendering
+    this.onerror = function(message) {};
 
-    const theme = JSON.parse(JSON.stringify(THEME));
-    if ('theme' in header) {
-        const header_theme = header.theme;
-        if ('fg' in header_theme) theme.foreground = header_theme.fg;
-        if ('bg' in header_theme) theme.background = header_theme.bg;
-        if ('palette' in header_theme)
-            Object.assign(theme, header_palette_theme(header_theme.palette))
-    }
-
-    theme.background = theme.background || theme.black;
-    theme.foreground = theme.foreground || theme.brightWhite;
-    theme.cursor = theme.cursor || theme.white;
-    theme.cursorAccent = theme.cursorAccent || theme.white;
-    theme.selection = theme.selection || theme.white;
-
-    // xtermjs scales the canvas depending on devicePixelRatio. Adjust for this so
-    // that the generated GIF size is independent of devicePixelRatio.
-    const fontSize = 30 / window.devicePixelRatio;  // non-integer values seems to work
-
-    const config = {
-        cols: header.width,
-        rows: header.height,
-        cursorStyle: 'block',
-        cursorBlink: false,
-        allowTransparency: false,
-        theme: theme,
-        fontSize: fontSize,
-    };
-    const term = new Terminal(config);
-
-    let idx = 0;  // index of frame being processed
-    const process = function() {
-        term.focus();  // to make cursor visible
-        const text_canvas = document.getElementsByClassName('xterm-text-layer')[0];
-        const cursor_canvas = document.getElementsByClassName('xterm-cursor-layer')[0];
-
-        const canvas = document.createElement('canvas');
-        const width = text_canvas.width + 2 * PADDING;
-        const height = text_canvas.height + 2 * PADDING;
-
-        if (gif === null) {
-            // Set 'loop' to 0 to continuously loop
-            const gopts = {palette: PALETTE, loop: 0};
-            gif = new GifWriter(bytes, width, height, gopts);
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const context = canvas.getContext('2d');
-        context.fillStyle = theme.background;
-        context.fillRect(0, 0, width, height);
-
-        context.drawImage(
-            text_canvas, PADDING, PADDING, text_canvas.width, text_canvas.height);
-        context.drawImage(
-            cursor_canvas, PADDING, PADDING, cursor_canvas.width, cursor_canvas.height);
-
-        const data = context.getImageData(0, 0, width, height).data;
-        const pixels = [];
-        for (let i = 0; i < width * height; ++i) {
-            const r = data[i * 4];
-            const g = data[i * 4 + 1];
-            const b = data[i * 4 + 2];
-            const color = (r << 16) + (g << 8) + b;
-            pixels[i] = color;
-        }
-        const indexed_pixels = quantize(pixels);
-
-        let delay = frames[idx].delay;
-        const time = frames[idx].time;
-
-        // omggif expects centi-seconds
-        const gif_delay = delay * 100;
-        const opts = {delay: gif_delay};
-        gif.addFrame(0, 0, width, height, indexed_pixels, opts);
-
-        percent = 100.0 * (idx + 1) / (frames.length + 1);
-        set_progress(percent);
-
-        if (idx >= frames.length - 1) {
-            // TODO: Put GIF in an overlay
-            const b64 = base64(bytes);
-            const src = 'data:image/gif;base64,' + b64;
-            end_render_success(src);
-            setTimeout(function() {
-                term.dispose();
-            });
+    this.render = function(cast) {
+        this.oninit();
+        let header, events;
+        try {
+            ({header, events} = parse_cast(cast));
+        } catch(e) {
+            this.onerror(e.message);
             return;
         }
 
-        let frame = frames[++idx];
-        term.write(frame.data);
+        let frames = extract_frames(events);
+        frames = merge_frames(frames);
+
+        const bytes = [];
+        // This is initialized later, when we have the actual dimensions available.
+        let gif = null;
+
+        // Writing text to the xterm.js terminal is asynchronous.
+        // To workaround this, iteration is conducted with the
+        // onRender callback. Each time the terminal is rendered,
+        // the GIF is updated, and another frame (more text) is pushed
+        // for processing. Iteration starts with the initial onRender
+        // that is called when the terminal is opened.
+
+        const theme = JSON.parse(JSON.stringify(THEME));
+        if ('theme' in header) {
+            const header_theme = header.theme;
+            if ('fg' in header_theme) theme.foreground = header_theme.fg;
+            if ('bg' in header_theme) theme.background = header_theme.bg;
+            if ('palette' in header_theme)
+                Object.assign(theme, header_palette_theme(header_theme.palette))
+        }
+
+        theme.background = theme.background || theme.black;
+        theme.foreground = theme.foreground || theme.brightWhite;
+        theme.cursor = theme.cursor || theme.white;
+        theme.cursorAccent = theme.cursorAccent || theme.white;
+        theme.selection = theme.selection || theme.white;
+
+        // xtermjs scales the canvas depending on devicePixelRatio. Adjust for this so
+        // that the generated GIF size is independent of devicePixelRatio.
+        const fontSize = 30 / window.devicePixelRatio;  // non-integer values seems to work
+
+        const config = {
+            cols: header.width,
+            rows: header.height,
+            cursorStyle: 'block',
+            cursorBlink: false,
+            allowTransparency: false,
+            theme: theme,
+            fontSize: fontSize,
+        };
+        const term = new Terminal(config);
+
+        let idx = 0;  // index of frame being processed
+        const process = function() {
+            term.focus();  // to make cursor visible
+            const text_canvas = this.parent.getElementsByClassName('xterm-text-layer')[0];
+            const cursor_canvas = this.parent.getElementsByClassName('xterm-cursor-layer')[0];
+
+            const canvas = this.parent.ownerDocument.createElement('canvas');
+            const width = text_canvas.width + 2 * PADDING;
+            const height = text_canvas.height + 2 * PADDING;
+
+            if (gif === null) {
+                // Set 'loop' to 0 to continuously loop
+                const gopts = {palette: PALETTE, loop: 0};
+                gif = new GifWriter(bytes, width, height, gopts);
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const context = canvas.getContext('2d');
+            context.fillStyle = theme.background;
+            context.fillRect(0, 0, width, height);
+
+            context.drawImage(
+                text_canvas, PADDING, PADDING, text_canvas.width, text_canvas.height);
+            context.drawImage(
+                cursor_canvas, PADDING, PADDING, cursor_canvas.width, cursor_canvas.height);
+
+            const data = context.getImageData(0, 0, width, height).data;
+            const pixels = [];
+            for (let i = 0; i < width * height; ++i) {
+                const r = data[i * 4];
+                const g = data[i * 4 + 1];
+                const b = data[i * 4 + 2];
+                const color = (r << 16) + (g << 8) + b;
+                pixels[i] = color;
+            }
+            const indexed_pixels = quantize(pixels);
+
+            let delay = frames[idx].delay;
+            const time = frames[idx].time;
+
+            // omggif expects centi-seconds
+            const gif_delay = delay * 100;
+            const opts = {delay: gif_delay};
+            gif.addFrame(0, 0, width, height, indexed_pixels, opts);
+
+            const percent = 100.0 * (idx + 1) / (frames.length + 1);
+            set_progress(percent);
+
+            if (idx >= frames.length - 1) {
+                const b64 = base64(bytes);
+                const src = 'data:image/gif;base64,' + b64;
+                this.onsuccess(src);
+                setTimeout(function() {
+                    term.dispose();
+                });
+                return;
+            }
+
+            let frame = frames[++idx];
+            term.write(frame.data);
+        };
+
+        term.onRender(process);
+        term.open(this.parent);
+        // Set <textarea readonly> so that a screen keyboard doesn't pop-up on mobile devices.
+        const textareas = terminal.getElementsByTagName('textarea');
+        for (let i = 0; i < textareas.length; ++i) {
+            textareas[i].readOnly = true;
+        }
     };
 
-    term.onRender(process);
-    const terminal = document.getElementById('terminal');
-    term.open(terminal);
-    // Set <textarea readonly> so that a screen keyboard doesn't pop-up on mobile devices.
-    const textareas = terminal.getElementsByTagName('textarea');
-    for (let i = 0; i < textareas.length; ++i) {
-        textareas[i].readOnly = true;
-    }
+    return this;
+}
+
+const renderer = Renderer(document.getElementById('terminal'));
+renderer.oninit = function() {
+    set_rendered_image('');
+    show_loading();
+    set_progress(0.0);
+    disable_file_selector();
+};
+renderer.onsuccess = function(img_src) {
+    // TODO: Put GIF in an overlay
+    set_rendered_image(img_src);
+    hide_loading();
+    enable_file_selector();
+};
+renderer.onerror = function(message) {
+    alert(message);
+    hide_loading();
+    enable_file_selector();
 };
 
 document.getElementById('file_selector').onchange = function(e) {
@@ -393,7 +403,7 @@ document.getElementById('file_selector').onchange = function(e) {
     }
     const reader = new FileReader();
     reader.onload = function() {
-        render(reader.result);
+        renderer.render(reader.result);
     };
     reader.readAsText(files[0]);
 };
