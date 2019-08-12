@@ -46,6 +46,10 @@ details {
     margin-bottom: 1em;
 }
 
+details > *:not(summary){
+    margin-left: 2em;
+}
+
 summary {
     outline: none;
     cursor: pointer;
