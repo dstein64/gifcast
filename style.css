@@ -51,6 +51,7 @@ details > *:not(summary){
 }
 
 summary {
+    display: inline-block;
     outline: none;
     cursor: pointer;
 }
