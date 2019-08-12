@@ -229,8 +229,7 @@ function Renderer(parent) {
     // Callback after failed rendering
     this.onerror = function(message) {};
 
-    this.render = function(cast, size) {
-        this.oninit();
+    const render = function(cast, size) {
         let header, events;
         try {
             ({header, events} = parse_cast(cast));
@@ -349,16 +348,19 @@ function Renderer(parent) {
         };
 
         term.onRender(process);
-        // Open terminal.
-        // Add to the event loop message queue so that pending DOM manipulations are processed first
-        // (e.g., those specified in oninit).
+        term.open(parent);
+        // Set <textarea readonly> so that a screen keyboard doesn't pop-up on mobile devices.
+        const textareas = terminal.getElementsByTagName('textarea');
+        for (let i = 0; i < textareas.length; ++i) {
+            textareas[i].readOnly = true;
+        }
+    };
+
+    this.render = function(cast, size) {
+        // Utilize the event loop message queue with setTimeout to process oninit first.
+        setTimeout(this.oninit);
         setTimeout(function() {
-            term.open(parent);
-            // Set <textarea readonly> so that a screen keyboard doesn't pop-up on mobile devices.
-            const textareas = terminal.getElementsByTagName('textarea');
-            for (let i = 0; i < textareas.length; ++i) {
-                textareas[i].readOnly = true;
-            }
+            render(cast, size);
         });
     };
 
