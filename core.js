@@ -220,8 +220,6 @@ const parse_cast = function(cast) {
 //   https://github.com/asciinema/asciinema/blob/develop/doc/asciicast-v2.md
 
 function Renderer(parent) {
-    this.parent = parent;
-
     // Callback before rendering
     this.oninit = function() {};
 
@@ -288,12 +286,12 @@ function Renderer(parent) {
         let idx = 0;  // index of frame being processed
         const process = function() {
             term.focus();  // to make cursor visible
-            const text_canvas = this.parent.getElementsByClassName('xterm-text-layer')[0];
-            const cursor_canvas = this.parent.getElementsByClassName('xterm-cursor-layer')[0];
+            const text_canvas = parent.getElementsByClassName('xterm-text-layer')[0];
+            const cursor_canvas = parent.getElementsByClassName('xterm-cursor-layer')[0];
 
             const padding = Math.ceil(PADDING_FACTOR * size);
 
-            const canvas = this.parent.ownerDocument.createElement('canvas');
+            const canvas = parent.ownerDocument.createElement('canvas');
             const width = text_canvas.width + 2 * padding;
             const height = text_canvas.height + 2 * padding;
 
@@ -351,7 +349,7 @@ function Renderer(parent) {
         };
 
         term.onRender(process);
-        term.open(this.parent);
+        term.open(parent);
         // Set <textarea readonly> so that a screen keyboard doesn't pop-up on mobile devices.
         const textareas = terminal.getElementsByTagName('textarea');
         for (let i = 0; i < textareas.length; ++i) {
@@ -395,22 +393,69 @@ const hide_loading = function() {
     document.getElementById('loading').style.display = 'none';
 };
 
-const set_rendered_image = function(src) {
-    document.getElementById('rendered').src = src;
-};
+function Modal(parent) {
+    const SRC = 'data:,';
+    const ESC_KEY = 'Escape';
+    const _this = this;
+    const HIDDEN_STYLE = 'none';
+    const SHOWN_STYLE = 'initial';
+
+    const doc = parent.ownerDocument;
+    const span = doc.createElement('span');
+    span.id = 'close';
+    span.innerHTML = '&times;';
+    parent.appendChild(span);
+    const div = doc.createElement('div');
+    div.id = 'modal_inner';
+    parent.appendChild(div);
+    const img = doc.createElement('img');
+    img.id = 'img';
+    div.appendChild(img);
+
+    this.show = function(src) {
+        img.src = src;
+        parent.style.display = SHOWN_STYLE;
+    };
+
+    this.hide = function() {
+        img.src = SRC;
+        parent.style.display = HIDDEN_STYLE;
+    };
+
+    span.onclick = function() {
+        _this.hide();
+    };
+
+    parent.onclick = function() {
+        _this.hide();
+    };
+
+    img.onclick = function(event) {
+        // Prevent the click from being passed to the modal element.
+        event.stopPropagation();
+    };
+
+    doc.addEventListener('keyup', function(event) {
+        if (event.key === ESC_KEY && parent.style.display === SHOWN_STYLE) {
+            _this.hide();
+        }
+    });
+
+    return this;
+}
+
+const modal = Modal(document.getElementById('modal'));
 
 const renderer = Renderer(document.getElementById('terminal'));
 renderer.oninit = function() {
-    set_rendered_image('');
     show_loading();
     set_progress(0.0);
     enable_fieldset(false);
 };
 renderer.onsuccess = function(img_src) {
-    // TODO: Put GIF in an overlay
-    set_rendered_image(img_src);
     hide_loading();
     enable_fieldset();
+    modal.show(img_src);
 };
 renderer.onerror = function(message) {
     alert(message);
