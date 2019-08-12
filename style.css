@@ -36,10 +36,17 @@ fieldset {
     height: auto;
 }
 
-summary {
-    outline: none;
+details {
     display: block;
     margin-top: 1em;
     margin-bottom: 1em;
+}
+
+summary {
+    outline: none;
     cursor: pointer;
+}
+
+#summary {
+    border-bottom: 1px dotted;
 }
