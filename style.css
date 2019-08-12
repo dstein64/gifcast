@@ -12,10 +12,11 @@ fieldset {
 }
 
 #progress {
-    text-align: center;
+    vertical-align: middle;
 }
-#progress:after {
-    content: attr(value)'%';
+
+#progress_text {
+    vertical-align: middle;
 }
 
 /*

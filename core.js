@@ -388,8 +388,10 @@ const enable_render_button = function(enabled) {
 };
 
 const set_progress = function(percent) {
-    // Use floor so 100% won't show prematurely.
-    document.getElementById('progress').value = Math.floor(percent);
+    const string = percent.toFixed(1);
+    document.getElementById('progress').value = string;
+    const progress_text = string + '%';
+    document.getElementById('progress_text').innerText = progress_text;
 };
 
 const show_loading = function() {
