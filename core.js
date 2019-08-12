@@ -349,12 +349,17 @@ function Renderer(parent) {
         };
 
         term.onRender(process);
-        term.open(parent);
-        // Set <textarea readonly> so that a screen keyboard doesn't pop-up on mobile devices.
-        const textareas = terminal.getElementsByTagName('textarea');
-        for (let i = 0; i < textareas.length; ++i) {
-            textareas[i].readOnly = true;
-        }
+        // Open terminal.
+        // Add to the event loop message queue so that pending DOM manipulations are processed first
+        // (e.g., those specified in oninit).
+        setTimeout(function() {
+            term.open(parent);
+            // Set <textarea readonly> so that a screen keyboard doesn't pop-up on mobile devices.
+            const textareas = terminal.getElementsByTagName('textarea');
+            for (let i = 0; i < textareas.length; ++i) {
+                textareas[i].readOnly = true;
+            }
+        });
     };
 
     return this;
