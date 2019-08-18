@@ -405,7 +405,6 @@ const hide_loading = function() {
 function Modal(parent) {
     const SRC = 'data:,';
     const ESC_KEY = 'Escape';
-    const _this = this;
     const HIDDEN_STYLE = 'none';
     const SHOWN_STYLE = 'initial';
 
@@ -431,12 +430,12 @@ function Modal(parent) {
         parent.style.display = HIDDEN_STYLE;
     };
 
-    span.onclick = function() {
-        _this.hide();
+    span.onclick = () => {
+        this.hide();
     };
 
-    parent.onclick = function() {
-        _this.hide();
+    parent.onclick = () => {
+        this.hide();
     };
 
     img.onclick = function(event) {
@@ -444,9 +443,9 @@ function Modal(parent) {
         event.stopPropagation();
     };
 
-    doc.addEventListener('keyup', function(event) {
+    doc.addEventListener('keyup', (event) => {
         if (event.key === ESC_KEY && parent.style.display === SHOWN_STYLE) {
-            _this.hide();
+            this.hide();
         }
     });
 
