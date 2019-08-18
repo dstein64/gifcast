@@ -229,7 +229,7 @@ function Renderer(parent) {
     // Callback after failed rendering
     this.onerror = function(message) {};
 
-    const render = function(cast, size) {
+    const render = (cast, size) => {
         let header, events;
         try {
             ({header, events} = parse_cast(cast));
@@ -283,7 +283,7 @@ function Renderer(parent) {
         const term = new Terminal(config);
 
         let idx = 0;  // index of frame being processed
-        const process = function() {
+        const process = () => {
             term.focus();  // to make cursor visible
             const text_canvas = parent.getElementsByClassName('xterm-text-layer')[0];
             const cursor_canvas = parent.getElementsByClassName('xterm-cursor-layer')[0];
@@ -356,15 +356,13 @@ function Renderer(parent) {
         }
     };
 
-    this.render = function(cast, size) {
+    this.render = (cast, size) => {
         // Utilize the event loop message queue with setTimeout to process oninit first.
         setTimeout(this.oninit);
         setTimeout(function() {
             render(cast, size);
         });
     };
-
-    return this;
 }
 
 // *************************************************
@@ -448,13 +446,11 @@ function Modal(parent) {
             this.hide();
         }
     });
-
-    return this;
 }
 
-const modal = Modal(document.getElementById('modal'));
+const modal = new Modal(document.getElementById('modal'));
 
-const renderer = Renderer(document.getElementById('terminal'));
+const renderer = new Renderer(document.getElementById('terminal'));
 renderer.oninit = function() {
     show_loading();
     set_progress(0.0);
