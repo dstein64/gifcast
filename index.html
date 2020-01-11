@@ -26,10 +26,8 @@
     </p>
     <details>
         <summary><span id="summary">Details</span></summary>
-        <p>A larger selected <em>size</em> will result in a higher-resolution GIF.</p>
         <p>
-            Large images are scaled down to fit on the screen. Saving retains the full
-            resolution.
+            Images are scaled down to fit on the screen. Saving retains the full resolution.
         </p>
         <p>
             Browsers throttle background tabs, so be sure to keep this page in the foreground
@@ -40,7 +38,7 @@
         <fieldset id="fieldset">
             <table>
                 <tr>
-                    <td><label for="file_selector">file: </label></td>
+                    <td><label for="file_selector">file</label></td>
                     <td>
                         <input id="file_selector"
                                type="file"
@@ -49,7 +47,14 @@
                     </td>
                 </tr>
                 <tr>
-                    <td><label for="size">size: </label></td>
+                    <td>
+                        <a class="tooltip">
+                            size
+                            <span>
+                                A larger selected <em>size</em> will result in a higher-resolution GIF.
+                            </span>
+                        </a>
+                    </td>
                     <td>
                         <select id="size">
                             <option value="10">extra small</option>
@@ -57,6 +62,22 @@
                             <option value="20" selected="selected">medium</option>
                             <option value="25">large</option>
                             <option value="30">extra large</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <a class="tooltip">
+                            contrast<br>gain
+                            <span>Dynamically changes colors to increase contrast.</span>
+                        </a>
+                    </td>
+                    <td>
+                        <select id="contrast_gain">
+                            <option value="0" selected="selected">none</option>
+                            <option value="1">low</option>
+                            <option value="5">medium</option>
+                            <option value="15">high</option>
                         </select>
                     </td>
                 </tr>

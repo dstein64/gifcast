@@ -229,7 +229,7 @@ function Renderer(parent) {
     // Callback after failed rendering
     this.onerror = function(message) {};
 
-    const render = (cast, size) => {
+    const render = (cast, options) => {
         let header, events;
         try {
             ({header, events} = parse_cast(cast));
@@ -269,7 +269,7 @@ function Renderer(parent) {
 
         // xtermjs scales the canvas depending on devicePixelRatio. Adjust for this so
         // that the generated GIF size is independent of devicePixelRatio.
-        const fontSize = size / window.devicePixelRatio;  // non-integer values seems to work
+        const fontSize = options.size / window.devicePixelRatio;  // non-integer values seems to work
 
         const config = {
             cols: header.width,
@@ -279,6 +279,7 @@ function Renderer(parent) {
             allowTransparency: false,
             theme: theme,
             fontSize: fontSize,
+            minimumContrastRatio: options.contrast_gain,
         };
         const term = new Terminal(config);
 
@@ -288,7 +289,7 @@ function Renderer(parent) {
             const text_canvas = parent.getElementsByClassName('xterm-text-layer')[0];
             const cursor_canvas = parent.getElementsByClassName('xterm-cursor-layer')[0];
 
-            const padding = Math.ceil(PADDING_FACTOR * size);
+            const padding = Math.ceil(PADDING_FACTOR * options.size);
 
             const canvas = parent.ownerDocument.createElement('canvas');
             const width = text_canvas.width + 2 * padding;
@@ -356,11 +357,11 @@ function Renderer(parent) {
         }
     };
 
-    this.render = (cast, size) => {
+    this.render = (cast, options) => {
         // Utilize the event loop message queue with setTimeout to process oninit first.
         setTimeout(this.oninit);
         setTimeout(function() {
-            render(cast, size);
+            render(cast, options);
         });
     };
 }
@@ -369,8 +370,15 @@ function Renderer(parent) {
 // * DOM Manipulation
 // *************************************************
 
-const get_size = function() {
-    return Number.parseInt(document.getElementById('size').value);
+const get_options = function() {
+    const size = Number.parseInt(document.getElementById('size').value);
+    const contrast_gain = Number.parseInt(
+        document.getElementById('contrast_gain').value);
+    const options = {
+        size: size,
+        contrast_gain: contrast_gain,
+    };
+    return options;
 };
 
 // Using a <fieldset> provides a way to enable and disable all form inputs
@@ -482,7 +490,7 @@ document.getElementById('render_button').onclick = function(e) {
     }
     const reader = new FileReader();
     reader.onload = function() {
-        renderer.render(reader.result, get_size());
+        renderer.render(reader.result, get_options());
     };
     reader.readAsText(files[0]);
     return false;

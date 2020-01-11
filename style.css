@@ -4,7 +4,7 @@
 
 table {
     border-collapse: separate;
-    border-spacing: 2px 5px;
+    border-spacing: 3px 5px;
 }
 
 table > tbody > tr > td:nth-child(1) {
@@ -68,6 +68,44 @@ summary {
 
 #summary {
     border-bottom: 1px dotted;
+}
+
+/* *************************************************
+ * * Tooltips
+ * ************************************************* */
+
+a.tooltip {
+    outline: none;
+    border-bottom: 1px dotted;
+}
+
+a.tooltip:hover {
+    text-decoration: none;
+}
+
+a.tooltip span {
+    z-index: 10;
+    display: none;
+    padding: 14px 20px;
+    margin-top: -30px;
+    margin-left: 14px;
+    width: auto;
+    max-width: 300px;
+    line-height: 16px;
+    text-align: left;
+}
+
+a.tooltip:hover span {
+    display: inline;
+    position: absolute;
+    color: #111;
+    border: 1px solid #DCA;
+    background:#fffAF0;
+}
+
+a.tooltip span {
+    border-radius:4px;
+    box-shadow: 5px 5px 8px #CCC;
 }
 
 /* *************************************************
