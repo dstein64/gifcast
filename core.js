@@ -61,26 +61,90 @@ for (let i = 0; i < PALETTE.length; ++i) {
     COLOR_CODE[PALETTE[i]] = i;
 }
 
-// Default theme for xterm.js. Overridden with values from cast file.
-// Does not include background, foreground, cursor, cursorAccent, nor
-// selection. These are either set automatically in the code, or not set.
-const THEME = {
-    black: '#000000',
-    red: '#800000',
-    green: '#008000',
-    yellow: '#808000',
-    blue: '#000080',
-    purple: '#800080',
-    cyan: '#008080',
-    white: '#c0c0c0',
-    brightBlack: '#808080',
-    brightRed: '#ff0000',
-    brightGreen: '#00ff00',
-    brightYellow: '#ffff00',
-    brightBlue: '#0000ff',
-    brightPurple: '#ff00ff',
-    brightCyan: '#00ffff',
-    brightWhite: '#ffffff',
+// The themes are from VS code. The VS-specific themes are excluded.
+// The ANSI colors are from the corresponding settings.
+// theme.background is from editor.background
+// theme.foreground is from editor.foreground when available
+//   otherwise #333333 for light themes, #CCCCCC for dark themes,
+//   and #FFFFFF for high contrast themes
+// theme.cursor is from editorCursor.foreground when available
+//   otherwise use the same value used for theme.foreground
+// theme.cursorAccent is the same value used for theme.background
+// theme.selection is from editor.selectionBackground when available
+//   (excluding alpha channel)
+//   otherwise #000040 for light themes, #FFFF40 for dark themes,
+//   and #FFFF80 for high contrast themes
+
+const THEMES = {
+    abyss: {
+              black: '#111111',          red: '#ff9da4',       green: '#d1f1a9',       yellow: '#ffeead',
+               blue: '#bbdaff',       purple: '#ebbbff',        cyan: '#99ffff',        white: '#cccccc',
+        brightBlack: '#333333',    brightRed: '#ff7882', brightGreen: '#b8f171', brightYellow: '#ffe580',
+         brightBlue: '#80baff', brightPurple: '#d778ff',  brightCyan: '#78ffff',  brightWhite: '#ffffff',
+         background: '#000c18',   foreground: '#6688cc',      cursor: '#ddbb88', cursorAccent: '#000c18',
+          selection: '#770811',
+    },
+    dark: {
+         background: '#1E1E1E',   foreground: '#D4D4D4',      cursor: '#D4D4D4', cursorAccent: '#1E1E1E',
+          selection: '#FFFF40',
+    },
+    high_contrast: {
+         background: '#000000',   foreground: '#FFFFFF',      cursor: '#FFFFFF', cursorAccent: '#000000',
+          selection: '#FFFF80',
+    },
+    kimbie_dark: {
+         background: '#221a0f',   foreground: '#d3af86',      cursor: '#d3af86', cursorAccent: '#221a0f',
+          selection: '#84613d',
+    },
+    light: {
+         background: '#FFFFFF',   foreground: '#000000',      cursor: '#000000', cursorAccent: '#FFFFFF',
+          selection: '#000040',
+    },
+    monokai: {
+              black: '#333333',          red: '#C4265E',       green: '#86B42B',       yellow: '#B3B42B',
+               blue: '#6A7EC8',       purple: '#8C6BC8',        cyan: '#56ADBC',        white: '#e3e3dd',
+        brightBlack: '#666666',    brightRed: '#f92672', brightGreen: '#A6E22E', brightYellow: '#e2e22e',
+         brightBlue: '#819aff', brightPurple: '#AE81FF',  brightCyan: '#66D9EF',  brightWhite: '#f8f8f2',
+         background: '#272822',   foreground: '#f8f8f2',      cursor: '#f8f8f0', cursorAccent: '#272822',
+          selection: '#878b91',
+    },
+    monokai_dimmed: {
+              white: '#ffffff',
+         background: '#1e1e1e',   foreground: '#c5c8c6',      cursor: '#c07020', cursorAccent: '#1e1e1e',
+          selection: '#676b71',
+    },
+    quietlight: {
+         background: '#F5F5F5',   foreground: '#333333',      cursor: '#54494B', cursorAccent: '#F5F5F5',
+          selection: '#C9D0D9',
+    },
+    red: {
+         background: '#390000',   foreground: '#F8F8F8',      cursor: '#970000', cursorAccent: '#390000',
+          selection: '#750000',
+    },
+    solarized_dark: {
+              black: '#073642',          red: '#dc322f',       green: '#859900',       yellow: '#b58900',
+               blue: '#268bd2',       purple: '#d33682',        cyan: '#2aa198',        white: '#eee8d5',
+        brightBlack: '#586e75',    brightRed: '#cb4b16', brightGreen: '#586e75', brightYellow: '#657b83',
+         brightBlue: '#839496', brightPurple: '#6c71c4',  brightCyan: '#93a1a1',  brightWhite: '#fdf6e3',
+         background: '#002B36',   foreground: '#CCCCCC',      cursor: '#D30102', cursorAccent: '#002B36',
+          selection: '#274642',
+    },
+    solarized_light: {
+              black: '#073642',          red: '#dc322f',       green: '#859900',       yellow: '#b58900',
+               blue: '#268bd2',       purple: '#d33682',        cyan: '#2aa198',        white: '#eee8d5',
+        brightBlack: '#586e75',    brightRed: '#cb4b16', brightGreen: '#586e75', brightYellow: '#657b83',
+         brightBlue: '#839496', brightPurple: '#6c71c4',  brightCyan: '#93a1a1',  brightWhite: '#eee8d5',
+         background: '#FDF6E3',   foreground: '#6688cc',      cursor: '#657B83', cursorAccent: '#FDF6E3',
+          selection: '#EEE8D5',
+    },
+    tomorrow_night_blue: {
+              black: '#111111',          red: '#ff9da4',       green: '#d1f1a9',       yellow: '#ffeead',
+               blue: '#bbdaff',       purple: '#ebbbff',        cyan: '#99ffff',        white: '#cccccc',
+        brightBlack: '#333333',    brightRed: '#ff7882', brightGreen: '#b8f171', brightYellow: '#ffe580',
+         brightBlue: '#80baff', brightPurple: '#d778ff',  brightCyan: '#78ffff',  brightWhite: '#ffffff',
+         background: '#002451',   foreground: '#ffffff',      cursor: '#ffffff', cursorAccent: '#002451',
+          selection: '#003f8e',
+    },
 };
 
 // Calculates the squared distance between two hex colors.
@@ -252,20 +316,17 @@ function Renderer(parent) {
         // for processing. Iteration starts with the initial onRender
         // that is called when the terminal is opened.
 
-        const theme = JSON.parse(JSON.stringify(THEME));
-        if ('theme' in header) {
+        const theme = JSON.parse(JSON.stringify(THEMES[options.theme] || {}));
+
+        if (options.theme === 'none' && 'theme' in header) {
+            // It appears that there is no way to set cursor, cursorAccent, and selection
+            // in the asciicast file format (version 2).
             const header_theme = header.theme;
             if ('fg' in header_theme) theme.foreground = header_theme.fg;
             if ('bg' in header_theme) theme.background = header_theme.bg;
             if ('palette' in header_theme)
-                Object.assign(theme, header_palette_theme(header_theme.palette))
+                Object.assign(theme, header_palette_theme(header_theme.palette));
         }
-
-        theme.background = theme.background || theme.black;
-        theme.foreground = theme.foreground || theme.brightWhite;
-        theme.cursor = theme.cursor || theme.white;
-        theme.cursorAccent = theme.cursorAccent || theme.white;
-        theme.selection = theme.selection || theme.white;
 
         // xtermjs scales the canvas depending on devicePixelRatio. Adjust for this so
         // that the generated GIF size is independent of devicePixelRatio.
@@ -374,9 +435,11 @@ const get_options = function() {
     const size = Number.parseInt(document.getElementById('size').value);
     const contrast_gain = Number.parseInt(
         document.getElementById('contrast_gain').value);
+    const theme = document.getElementById('theme').value;
     const options = {
         size: size,
         contrast_gain: contrast_gain,
+        theme: theme,
     };
     return options;
 };
