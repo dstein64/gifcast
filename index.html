@@ -75,10 +75,11 @@
                     </td>
                     <td>
                         <select id="contrast_gain">
-                            <option value="0" selected="selected">none</option>
-                            <option value="1">low</option>
-                            <option value="5">medium</option>
-                            <option value="15">high</option>
+                            <option value="1" selected="selected">none</option>
+                            <option value="4.5">low</option><!--Minimum for WCAG AA compliance.-->
+                            <option value="7">medium</option><!--Minimum for WCAG AAA compliance.-->
+                            <option value="14">high</option>
+                            <option value="21">full</option><!--White on black or black on white.-->
                         </select>
                     </td>
                 </tr>
