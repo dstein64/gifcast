@@ -38,17 +38,30 @@
     </details>
     <form autocomplete="off">
         <fieldset id="fieldset">
-            <label for="size">size: </label>
-            <select id="size">
-                <option value="10">extra small</option>
-                <option value="15">small</option>
-                <option value="20" selected="selected">medium</option>
-                <option value="25">large</option>
-                <option value="30">extra large</option>
-            </select>
-            &emsp;
-            <input id="file_selector" type="file" accept="application/x-asciicast, .cast" value="">
-            <br><br>
+            <table>
+                <tr>
+                    <td><label for="file_selector">file: </label></td>
+                    <td>
+                        <input id="file_selector"
+                               type="file"
+                               accept="application/x-asciicast, .cast"
+                               value="">
+                    </td>
+                </tr>
+                <tr>
+                    <td><label for="size">size: </label></td>
+                    <td>
+                        <select id="size">
+                            <option value="10">extra small</option>
+                            <option value="15">small</option>
+                            <option value="20" selected="selected">medium</option>
+                            <option value="25">large</option>
+                            <option value="30">extra large</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+            <br>
             <button id="render_button" disabled>Render</button>
         </fieldset>
     </form>

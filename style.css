@@ -2,6 +2,15 @@
  * * Core
  * ************************************************* */
 
+table {
+    border-collapse: separate;
+    border-spacing: 2px 5px;
+}
+
+table > tbody > tr > td:nth-child(1) {
+    text-align: right;
+}
+
 fieldset {
     border: 0;
     padding: 0;
