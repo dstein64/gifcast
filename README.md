@@ -15,7 +15,7 @@ How To Use
 instructions on recording an asciinema cast.
 
 To convert an asciinema cast to an animated GIF, navigate to index.html, load
-the cast, select a size, and click *Render*.
+the cast, configure options, and click *Render*.
 
 *gifcast* is available at
 <https://dstein64.github.io/gifcast/>.
