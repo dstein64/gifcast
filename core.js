@@ -18,10 +18,7 @@ const base64 = function(buffer) {
 // Multiple of size to determine padding in pixels.
 const PADDING_FACTOR = 0.5;
 
-// TODO: Use a separate palette for each frame, based on the colors in the frame.
-//       This will still require quantization to reduce the number of colors to
-//       256 or less (as required for GIF), perhaps using k-means color quantization.
-const PALETTE = [
+const BASE_PALETTE = [
     0x000000, 0x800000, 0x008000, 0x808000, 0x000080, 0x800080, 0x008080, 0xc0c0c0,
     0x808080, 0xff0000, 0x00ff00, 0xffff00, 0x0000ff, 0xff00ff, 0x00ffff, 0xffffff,
     0x000000, 0x00005f, 0x000087, 0x0000af, 0x0000d7, 0x0000ff, 0x005f00, 0x005f5f,
@@ -56,11 +53,6 @@ const PALETTE = [
     0xa8a8a8, 0xb2b2b2, 0xbcbcbc, 0xc6c6c6, 0xd0d0d0, 0xdadada, 0xe4e4e4, 0xeeeeee,
 ];
 
-const COLOR_CODE = {};
-for (let i = 0; i < PALETTE.length; ++i) {
-    COLOR_CODE[PALETTE[i]] = i;
-}
-
 // The themes are from VS code. The VS-specific themes are excluded.
 // The ANSI colors are from the corresponding settings.
 // theme.background is from editor.background
@@ -74,7 +66,6 @@ for (let i = 0; i < PALETTE.length; ++i) {
 //   (excluding alpha channel)
 //   otherwise #000040 for light themes, #FFFF40 for dark themes,
 //   and #FFFF80 for high contrast themes
-
 const THEMES = {
     abyss: {
               black: '#111111',          red: '#ff9da4',       green: '#d1f1a9',       yellow: '#ffeead',
@@ -85,26 +76,26 @@ const THEMES = {
           selection: '#770811',
     },
     dark: {
-         background: '#1E1E1E',   foreground: '#D4D4D4',      cursor: '#D4D4D4', cursorAccent: '#1E1E1E',
-          selection: '#FFFF40',
+         background: '#1e1e1e',   foreground: '#d4d4d4',      cursor: '#d4d4d4', cursorAccent: '#1e1e1e',
+          selection: '#ffff40',
     },
     high_contrast: {
-         background: '#000000',   foreground: '#FFFFFF',      cursor: '#FFFFFF', cursorAccent: '#000000',
-          selection: '#FFFF80',
+         background: '#000000',   foreground: '#ffffff',      cursor: '#ffffff', cursorAccent: '#000000',
+          selection: '#ffff80',
     },
     kimbie_dark: {
          background: '#221a0f',   foreground: '#d3af86',      cursor: '#d3af86', cursorAccent: '#221a0f',
           selection: '#84613d',
     },
     light: {
-         background: '#FFFFFF',   foreground: '#000000',      cursor: '#000000', cursorAccent: '#FFFFFF',
+         background: '#ffffff',   foreground: '#000000',      cursor: '#000000', cursorAccent: '#ffffff',
           selection: '#000040',
     },
     monokai: {
-              black: '#333333',          red: '#C4265E',       green: '#86B42B',       yellow: '#B3B42B',
-               blue: '#6A7EC8',       purple: '#8C6BC8',        cyan: '#56ADBC',        white: '#e3e3dd',
-        brightBlack: '#666666',    brightRed: '#f92672', brightGreen: '#A6E22E', brightYellow: '#e2e22e',
-         brightBlue: '#819aff', brightPurple: '#AE81FF',  brightCyan: '#66D9EF',  brightWhite: '#f8f8f2',
+              black: '#333333',          red: '#c4265e',       green: '#86b42b',       yellow: '#b3b42b',
+               blue: '#6a7ec8',       purple: '#8c6bc8',        cyan: '#56adbc',        white: '#e3e3dd',
+        brightBlack: '#666666',    brightRed: '#f92672', brightGreen: '#a6e22e', brightYellow: '#e2e22e',
+         brightBlue: '#819aff', brightPurple: '#ae81ff',  brightCyan: '#66d9ef',  brightWhite: '#f8f8f2',
          background: '#272822',   foreground: '#f8f8f2',      cursor: '#f8f8f0', cursorAccent: '#272822',
           selection: '#878b91',
     },
@@ -114,11 +105,11 @@ const THEMES = {
           selection: '#676b71',
     },
     quietlight: {
-         background: '#F5F5F5',   foreground: '#333333',      cursor: '#54494B', cursorAccent: '#F5F5F5',
-          selection: '#C9D0D9',
+         background: '#f5f5f5',   foreground: '#333333',      cursor: '#54494b', cursorAccent: '#f5f5f5',
+          selection: '#c9d0d9',
     },
     red: {
-         background: '#390000',   foreground: '#F8F8F8',      cursor: '#970000', cursorAccent: '#390000',
+         background: '#390000',   foreground: '#f8f8f8',      cursor: '#970000', cursorAccent: '#390000',
           selection: '#750000',
     },
     solarized_dark: {
@@ -126,7 +117,7 @@ const THEMES = {
                blue: '#268bd2',       purple: '#d33682',        cyan: '#2aa198',        white: '#eee8d5',
         brightBlack: '#586e75',    brightRed: '#cb4b16', brightGreen: '#586e75', brightYellow: '#657b83',
          brightBlue: '#839496', brightPurple: '#6c71c4',  brightCyan: '#93a1a1',  brightWhite: '#fdf6e3',
-         background: '#002B36',   foreground: '#CCCCCC',      cursor: '#D30102', cursorAccent: '#002B36',
+         background: '#002b36',   foreground: '#cccccc',      cursor: '#d30102', cursorAccent: '#002b36',
           selection: '#274642',
     },
     solarized_light: {
@@ -134,8 +125,8 @@ const THEMES = {
                blue: '#268bd2',       purple: '#d33682',        cyan: '#2aa198',        white: '#eee8d5',
         brightBlack: '#586e75',    brightRed: '#cb4b16', brightGreen: '#586e75', brightYellow: '#657b83',
          brightBlue: '#839496', brightPurple: '#6c71c4',  brightCyan: '#93a1a1',  brightWhite: '#eee8d5',
-         background: '#FDF6E3',   foreground: '#6688cc',      cursor: '#657B83', cursorAccent: '#FDF6E3',
-          selection: '#EEE8D5',
+         background: '#fdf6e3',   foreground: '#333333',      cursor: '#657b83', cursorAccent: '#fdf6e3',
+          selection: '#eee8d5',
     },
     tomorrow_night_blue: {
               black: '#111111',          red: '#ff9da4',       green: '#d1f1a9',       yellow: '#ffeead',
@@ -145,6 +136,14 @@ const THEMES = {
          background: '#002451',   foreground: '#ffffff',      cursor: '#ffffff', cursorAccent: '#002451',
           selection: '#003f8e',
     },
+};
+
+// Converts a color string (e.g., 003f8e) to its corresponding integer.
+const int = function(string) {
+    const r = parseInt(string.substring(1, 3), 16);
+    const g = parseInt(string.substring(3, 5), 16);
+    const b = parseInt(string.substring(5, 7), 16);
+    return (r << 16) + (g << 8) + b;
 };
 
 // Calculates the squared distance between two hex colors.
@@ -158,28 +157,52 @@ const distance2 = function(color1, color2) {
     return Math.pow(r1 - r2, 2) + Math.pow(g1 - g2, 2) + Math.pow(b1 - b2, 2)
 };
 
+// Returns the index of the color in haystack that is closest to needle.
+// 'exclude' is an optional argument specifying a Set() of indices to skip in the haystack.
+const closest = function(needle, haystack, exclude) {
+    let min = Infinity;
+    let idx = -1;
+    for (let i = 0; i < haystack.length; ++i) {
+        if (exclude && exclude.has(idx)) continue;
+        const candidate = haystack[i];
+        const dist = distance2(needle, candidate);
+        if (dist >= min) continue;
+        min = dist;
+        idx = i;
+    }
+    return idx;
+};
+
+// TODO: Use a separate palette for each frame, based on the colors in the frame.
+//       This will still require quantization to reduce the number of colors to
+//       256 or less (as required for GIF), perhaps using k-means color quantization.
+// Returns a palette that contains the required set of colors. Required colors are
+// included in the palette by replacing close colors in the BASE_PALETTE.
+const get_palette = function(required) {
+    const palette = [...BASE_PALETTE];
+    const req = Array.from(new Set(required)).slice(0, palette.length);
+    const exclude = new Set();
+    for (const color of req) {
+        let idx = closest(color, palette, exclude);
+        exclude.add(idx);
+        palette[idx] = color;
+    }
+    return palette;
+};
+
 // Given a set of pixels, quantize each to the index of the nearest
-// pixel in the global PALETTE.
-const quantize = function(pixels) {
-    const palette = Array.from(new Set(pixels));
+// pixel in the specified palette.
+const quantize = function(pixels, palette) {
     const color_code = {};
     for (let i = 0; i < palette.length; ++i) {
-        const color = palette[i];
-        if (color in COLOR_CODE) {
-            color_code[color] = COLOR_CODE[color];
-            continue;
-        }
+        color_code[palette[i]] = i;
+    }
+    const colors = Array.from(new Set(pixels));
+    for (let i = 0; i < colors.length; ++i) {
+        const color = colors[i];
+        if (color in color_code) continue;
         // Find the closest color
-        let min = Infinity;
-        let idx = 0;
-        for (let j = 0; j < PALETTE.length; ++j) {
-            const candidate = PALETTE[j];
-            const dist = distance2(color, candidate);
-            if (dist >= min) continue;
-            min = dist;
-            idx = j;
-        }
-        color_code[color] = idx;
+        color_code[color] = closest(color, BASE_PALETTE);
     }
     const indexed_pixels = [];
     for (let i = 0; i < pixels.length; ++i) {
@@ -344,6 +367,12 @@ function Renderer(parent) {
         };
         const term = new Terminal(config);
 
+        const required = [];
+        for (const value of Object.values(theme)) {
+            required.push(int(value));
+        }
+        const palette = get_palette(required);
+
         let idx = 0;  // index of frame being processed
         const process = () => {
             term.focus();  // to make cursor visible
@@ -358,7 +387,7 @@ function Renderer(parent) {
 
             if (gif === null) {
                 // Set 'loop' to 0 to continuously loop
-                const gopts = {palette: PALETTE, loop: 0};
+                const gopts = {palette: palette, loop: 0};
                 gif = new GifWriter(bytes, width, height, gopts);
             }
 
@@ -382,7 +411,7 @@ function Renderer(parent) {
                 const color = (r << 16) + (g << 8) + b;
                 pixels[i] = color;
             }
-            const indexed_pixels = quantize(pixels);
+            const indexed_pixels = quantize(pixels, palette);
 
             let delay = frames[idx].delay;
             const time = frames[idx].time;
