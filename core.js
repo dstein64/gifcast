@@ -107,7 +107,7 @@ const THEMES = {
          background: '#1e1e1e',   foreground: '#c5c8c6',      cursor: '#c07020', cursorAccent: '#1e1e1e',
           selection: '#676b71',
     },
-    quietlight: {
+    quiet_light: {
          background: '#f5f5f5',   foreground: '#333333',      cursor: '#54494b', cursorAccent: '#f5f5f5',
           selection: '#c9d0d9',
     },
