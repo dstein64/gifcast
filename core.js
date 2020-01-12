@@ -53,16 +53,19 @@ const BASE_PALETTE = [
     0xa8a8a8, 0xb2b2b2, 0xbcbcbc, 0xc6c6c6, 0xd0d0d0, 0xdadada, 0xe4e4e4, 0xeeeeee,
 ];
 
-// The themes are from VS code. The VS-specific themes are excluded.
-// The ANSI colors are from the corresponding settings.
-// theme.background is from editor.background
-// theme.foreground is from editor.foreground when available
+// The themes are from VS code, with the VS-specific themes excluded.
+// Data are from the corresponding JSON files
+// * E.g., https://github.com/microsoft/vscode/blob/master/extensions/
+//                 theme-abyss/themes/abyss-color-theme.json
+// * ANSI colors are from the 'terminal.*' settings.
+// * background is from 'editor.background'
+// * foreground is from 'editor.foreground' when available
 //   otherwise #333333 for light themes, #CCCCCC for dark themes,
 //   and #FFFFFF for high contrast themes
-// theme.cursor is from editorCursor.foreground when available
-//   otherwise use the same value used for theme.foreground
-// theme.cursorAccent is the same value used for theme.background
-// theme.selection is from editor.selectionBackground when available
+// * cursor is from 'editorCursor.foreground' when available
+//   otherwise use the same value used for foreground
+// * cursorAccent is the same value used for background
+// * selection is from 'editor.selectionBackground' when available
 //   (excluding alpha channel)
 //   otherwise #000040 for light themes, #FFFF40 for dark themes,
 //   and #FFFF80 for high contrast themes
