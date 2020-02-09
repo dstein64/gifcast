@@ -36,7 +36,7 @@ Example
 
 The animated GIF below was generated with *gifcast*.
 
-<img src="https://github.com/dstein64/gifcast/blob/master/example.gif?raw=true" width="800"/>
+<img src="https://github.com/dstein64/gifcast/blob/master/example.gif?raw=true" width="730"/>
 
 License
 -------
