@@ -507,7 +507,7 @@ function Modal(parent) {
     const SRC = 'data:,';
     const ESC_KEY = 'Escape';
     const HIDDEN_STYLE = 'none';
-    const SHOWN_STYLE = 'initial';
+    const SHOWN_STYLE = null;
 
     const doc = parent.ownerDocument;
     const span = doc.createElement('span');
