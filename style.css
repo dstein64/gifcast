@@ -121,6 +121,7 @@ a.tooltip span {
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.75);
+    cursor: pointer;
 }
 
 /* Modal border */
@@ -130,6 +131,7 @@ a.tooltip span {
     bottom: 40px;
     left: 40px;
     right: 40px;
+    cursor: auto;
 }
 
 /* No modal border on smaller screens */
