@@ -570,6 +570,32 @@ renderer.onerror = function(message) {
     enable_fieldset();
 };
 
+{
+    // Populate the theme dropdown menu.
+    const theme_element = document.getElementById('theme');
+    const themes = Object.keys(THEMES);
+    themes.push('none');
+    const value_and_text = [];
+    for (let i = 0; i < themes.length; ++i) {
+        value_and_text.push({
+            value: themes[i],
+            text: themes[i].replace('_', ' ')
+        });
+    }
+    value_and_text.sort((a, b) => {
+        return a.text.localeCompare(b.text);
+    });
+    for (let i = 0; i < value_and_text.length; ++i) {
+        const {value, text} = value_and_text[i];
+        const option = document.createElement('option');
+        option.value = value;
+        option.text = text;
+        if (value === 'none')
+            option.selected = 'selected';
+        theme_element.appendChild(option);
+    }
+}
+
 document.getElementById('file_selector').onchange = function(e) {
     const files = e.currentTarget.files;
     const enabled = FileReader && files && files.length > 0;
