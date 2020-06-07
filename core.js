@@ -376,8 +376,16 @@ function Renderer(parent) {
         }
         const palette = get_palette(required);
 
-        let idx = 0;  // index of frame being processed
+        // 'idx' is the index of frame being processed. Frames are written to
+        // the terminal at the end of process(), except for the initial frame, which
+        // is written at the beginning to start the process.
+        let idx = -1;
         const process = () => {
+            if (idx === -1) {
+                term.write(frames[++idx].data);
+                return;
+            }
+
             term.focus();  // to make cursor visible
             const text_canvas = parent.getElementsByClassName('xterm-text-layer')[0];
             const cursor_canvas = parent.getElementsByClassName('xterm-cursor-layer')[0];
@@ -387,12 +395,6 @@ function Renderer(parent) {
             const canvas = parent.ownerDocument.createElement('canvas');
             const width = text_canvas.width + 2 * padding;
             const height = text_canvas.height + 2 * padding;
-
-            if (gif === null) {
-                // Set 'loop' to 0 to continuously loop
-                const gopts = {palette: palette, loop: 0};
-                gif = new GifWriter(bytes, width, height, gopts);
-            }
 
             canvas.width = width;
             canvas.height = height;
@@ -419,6 +421,13 @@ function Renderer(parent) {
             let delay = frames[idx].delay;
             const time = frames[idx].time;
 
+            if (gif === null) {
+                // Set 'loop' to 0 to continuously loop. Set 'loop' to
+                // undefined to not loop. Set 'loop' to N to loop N times.
+                const gopts = {palette: palette, loop: undefined};
+                gif = new GifWriter(bytes, width, height, gopts);
+            }
+
             // omggif expects centi-seconds
             const gif_delay = delay * 100;
             const opts = {delay: gif_delay};
@@ -437,8 +446,7 @@ function Renderer(parent) {
                 return;
             }
 
-            let frame = frames[++idx];
-            term.write(frame.data);
+            term.write(frames[++idx].data);
         };
 
         term.onRender(process);
@@ -503,7 +511,7 @@ const hide_loading = function() {
     document.getElementById('loading').style.display = 'none';
 };
 
-function Modal(parent) {
+function ImgModal(parent) {
     const SRC = 'data:,';
     const ESC_KEY = 'Escape';
     const HIDDEN_STYLE = 'none';
@@ -551,7 +559,7 @@ function Modal(parent) {
     });
 }
 
-const modal = new Modal(document.getElementById('modal'));
+const modal = new ImgModal(document.getElementById('modal'));
 
 const renderer = new Renderer(document.getElementById('terminal'));
 renderer.oninit = function() {
@@ -570,8 +578,8 @@ renderer.onerror = function(message) {
     enable_fieldset();
 };
 
+// Populate the theme dropdown menu.
 {
-    // Populate the theme dropdown menu.
     const theme_element = document.getElementById('theme');
     const themes = Object.keys(THEMES);
     themes.push('none');
