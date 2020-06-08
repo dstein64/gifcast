@@ -544,6 +544,26 @@ const PngRenderer = function(parent, options, cast) {
 // * DOM Manipulation
 // *************************************************
 
+// Creates a DOM element, attached to the document, for running a terminal.
+// This should be removed with remove_terminal_element().
+const create_terminal_element = function() {
+    const terminal = document.createElement('div');
+    document.body.appendChild(terminal);
+    // The following settings make the terminal invisible and not
+    // affect the layout of the page. 'display: none' does not work
+    // since the terminal does not get rendered.
+    terminal.style.position = 'fixed';
+    terminal.style.bottom = 0;
+    terminal.style.right = 0;
+    terminal.style.opacity = 0;
+    terminal.style.zIndex = -1;
+    return terminal;
+};
+
+const remove_terminal_element = function(terminal) {
+    terminal.parentElement.removeChild(terminal);
+};
+
 const get_options = function() {
     const size = Number.parseInt(document.getElementById('size').value);
     const contrast_gain = Number.parseInt(
@@ -688,7 +708,7 @@ document.getElementById('render_button').onclick = function(e) {
     reader.onload = function() {
         const progress_setter = new ProgressSetter();
         const options = get_options();
-        const terminal = document.getElementById('terminal');
+        const terminal = create_terminal_element();
         const gif_renderer = new GifRenderer(terminal, options, reader.result);
         gif_renderer.oninit = function() {
             show_loading();
@@ -699,11 +719,13 @@ document.getElementById('render_button').onclick = function(e) {
             progress_setter.set(percent);
         };
         gif_renderer.onsuccess = function(data_url) {
+            remove_terminal_element(terminal);
             hide_loading();
             enable_fieldset();
             modal.show(data_url);
         };
         gif_renderer.onerror = function(message) {
+            remove_terminal_element(terminal);
             alert(message);
             hide_loading();
             enable_fieldset();
