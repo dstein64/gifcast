@@ -309,17 +309,20 @@ const parse_cast = function(cast) {
 // asciicast file format (version 2) is specified at:
 //   https://github.com/asciinema/asciinema/blob/develop/doc/asciicast-v2.md
 
-function Renderer(parent) {
-    // Callback before rendering
+const TermRunner = function(parent, options, cast) {
+    // Callback before term running
     this.oninit = function() {};
 
-    // Callback after successful rendering
-    this.onsuccess = function(img_src) {};
+    // Callback for each step of term running
+    this.onstep = function(state) {};
 
-    // Callback after failed rendering
+    // Callback after successful term running
+    this.onsuccess = function() {};
+
+    // Callback after failed term running
     this.onerror = function(message) {};
 
-    const render = (cast, options) => {
+    const run = () => {
         let header, events;
         try {
             ({header, events} = parse_cast(cast));
@@ -328,12 +331,7 @@ function Renderer(parent) {
             return;
         }
 
-        let frames = extract_frames(events);
-        frames = merge_frames(frames);
-
-        const bytes = [];
-        // This is initialized later, when we have the actual dimensions available.
-        let gif = null;
+        let frames = merge_frames(extract_frames(events));
 
         // Writing text to the xterm.js terminal is asynchronous.
         // To workaround this, iteration is conducted with the
@@ -369,12 +367,6 @@ function Renderer(parent) {
             minimumContrastRatio: options.contrast_gain,
         };
         const term = new Terminal(config);
-
-        const required = [];
-        for (const value of Object.values(theme)) {
-            required.push(int(value));
-        }
-        const palette = get_palette(required);
 
         // 'idx' is the index of frame being processed. Frames are written to
         // the terminal at the end of process(), except for the initial frame, which
@@ -416,30 +408,18 @@ function Renderer(parent) {
                 const color = (r << 16) + (g << 8) + b;
                 pixels[i] = color;
             }
-            const indexed_pixels = quantize(pixels, palette);
-
-            let delay = frames[idx].delay;
-            const time = frames[idx].time;
-
-            if (gif === null) {
-                // Set 'loop' to 0 to continuously loop. Set 'loop' to
-                // undefined to not loop. Set 'loop' to N to loop N times.
-                const gopts = {palette: palette, loop: undefined};
-                gif = new GifWriter(bytes, width, height, gopts);
+            const state = {
+                idx: idx,
+                delay: frames[idx].delay,
+                num_frames: frames.length,
+                pixels: pixels,
+                width: width,
+                height: height
             }
-
-            // omggif expects centi-seconds
-            const gif_delay = delay * 100;
-            const opts = {delay: gif_delay};
-            gif.addFrame(0, 0, width, height, indexed_pixels, opts);
-
-            const percent = 100.0 * (idx + 1) / frames.length;
-            set_progress(percent);
+            this.onstep(state);
 
             if (idx >= frames.length - 1) {
-                const b64 = base64(bytes);
-                const src = 'data:image/gif;base64,' + b64;
-                this.onsuccess(src);
+                this.onsuccess();
                 setTimeout(function() {
                     term.dispose();
                 });
@@ -458,14 +438,74 @@ function Renderer(parent) {
         }
     };
 
-    this.render = (cast, options) => {
+    this.run = function() {
         // Utilize the event loop message queue with setTimeout to process oninit first.
         setTimeout(this.oninit);
-        setTimeout(function() {
-            render(cast, options);
-        });
+        setTimeout(run);
     };
-}
+
+    return this;
+};
+
+const GifCast = function(parent, options, cast) {
+    // Callback before running
+    this.oninit = function() {};
+
+    // Callback for each progress update
+    this.onprogress = function(percent) {};
+
+    // Callback after successful GIF generated
+    this.onsuccess = function(data_uri) {};
+
+    // Callback after failure
+    this.onerror = function(message) {};
+
+    const run = () => {
+        const term_runner = new TermRunner(parent, options, cast);
+        const bytes = [];
+        // This is initialized later, when we have the actual dimensions available.
+        let gif = null;
+
+        const required = [];
+        for (const value of Object.values(options.theme)) {
+            required.push(int(value));
+        }
+        const palette = get_palette(required);
+
+        term_runner.oninit = this.oninit;
+        term_runner.onstep = (state) => {
+            const indexed_pixels = quantize(state.pixels, palette);
+            let delay = state.delay;
+            if (gif === null) {
+                // Set 'loop' to 0 to continuously loop. Set 'loop' to
+                // undefined to not loop. Set 'loop' to N to loop N times.
+                const gopts = {palette: palette, loop: 0};
+                gif = new GifWriter(bytes, state.width, state.height, gopts);
+            }
+            // omggif expects centi-seconds
+            const gif_delay = delay * 100;
+            const opts = {delay: gif_delay};
+            gif.addFrame(0, 0, state.width, state.height, indexed_pixels, opts);
+            const percent = 100.0 * (state.idx + 1) / state.num_frames;
+            this.onprogress(percent);
+        };
+        term_runner.onsuccess = () => {
+            const b64 = base64(bytes);
+            const data_uri = 'data:image/gif;base64,' + b64;
+            this.onsuccess(data_uri);
+        };
+        term_runner.onerror = this.onerror;
+        term_runner.run(cast);
+    };
+
+    this.run = function() {
+        // Utilize the event loop message queue with setTimeout to process oninit first.
+        setTimeout(this.oninit);
+        setTimeout(run);
+    };
+
+    return this;
+};
 
 // *************************************************
 // * DOM Manipulation
@@ -511,7 +551,7 @@ const hide_loading = function() {
     document.getElementById('loading').style.display = 'none';
 };
 
-function ImgModal(parent) {
+const ImgModal = function(parent) {
     const SRC = 'data:,';
     const ESC_KEY = 'Escape';
     const HIDDEN_STYLE = 'none';
@@ -557,26 +597,9 @@ function ImgModal(parent) {
             this.hide();
         }
     });
-}
+};
 
 const modal = new ImgModal(document.getElementById('modal'));
-
-const renderer = new Renderer(document.getElementById('terminal'));
-renderer.oninit = function() {
-    show_loading();
-    set_progress(0.0);
-    enable_fieldset(false);
-};
-renderer.onsuccess = function(img_src) {
-    hide_loading();
-    enable_fieldset();
-    modal.show(img_src);
-};
-renderer.onerror = function(message) {
-    alert(message);
-    hide_loading();
-    enable_fieldset();
-};
 
 // Populate the theme dropdown menu.
 {
@@ -619,7 +642,27 @@ document.getElementById('render_button').onclick = function(e) {
     }
     const reader = new FileReader();
     reader.onload = function() {
-        renderer.render(reader.result, get_options());
+        const options = get_options();
+        const gifcast = GifCast(document.getElementById('terminal'), options, reader.result);
+        gifcast.oninit = function() {
+            show_loading();
+            set_progress(0.0);
+            enable_fieldset(false);
+        };
+        gifcast.onprogress = function(percent) {
+            set_progress(percent);
+        };
+        gifcast.onsuccess = function(data_uri) {
+            hide_loading();
+            enable_fieldset();
+            modal.show(data_uri);
+        };
+        gifcast.onerror = function(message) {
+            alert(message);
+            hide_loading();
+            enable_fieldset();
+        };
+        gifcast.run();
     };
     reader.readAsText(files[0]);
     return false;
