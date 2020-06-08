@@ -48,6 +48,7 @@ details > *:not(summary){
 }
 
 summary {
+    /* WARN: For Chrome, the dropdown arrow is retained. For Firefox, it's dropped */
     display: inline-block;
     outline: none;
     cursor: pointer;
