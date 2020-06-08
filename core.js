@@ -532,11 +532,22 @@ const enable_render_button = function(enabled) {
     document.getElementById('render_button').disabled = !enabled;
 };
 
-const set_progress = function(percent) {
-    const string = percent.toFixed(1);
-    document.getElementById('progress').value = string;
-    const progress_text = string + '%';
-    document.getElementById('progress_text').innerText = progress_text;
+// Used for updating progress, with a specification for the delay in
+// milliseconds (to prevent rapid updates).
+const ProgressSetter = function(delay = 200) {
+    let last_set_time = null;
+    this.set = (percent) => {
+        const time = new Date().getTime();
+        if (percent !== 100.0 || last_set_time !== null) {
+            const diff = time - last_set_time;
+            if (diff < delay) return;
+        }
+        const string = percent.toFixed(1);
+        document.getElementById('progress').value = string;
+        const progress_text = string + '%';
+        document.getElementById('progress_text').innerText = progress_text;
+        last_set_time = time;
+    }
 };
 
 const show_loading = function() {
@@ -638,15 +649,16 @@ document.getElementById('render_button').onclick = function(e) {
     }
     const reader = new FileReader();
     reader.onload = function() {
+        const progress_setter = new ProgressSetter();
         const options = get_options();
         const gifcast = new GifCast(document.getElementById('terminal'), options, reader.result);
         gifcast.oninit = function() {
             show_loading();
-            set_progress(0.0);
+            progress_setter.set(0.0);
             enable_fieldset(false);
         };
         gifcast.onprogress = function(percent) {
-            set_progress(percent);
+            progress_setter.set(percent);
         };
         gifcast.onsuccess = function(data_uri) {
             hide_loading();
