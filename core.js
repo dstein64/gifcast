@@ -373,6 +373,7 @@ const TermRunner = function(parent, options, cast) {
         // is written at the beginning to start the process.
         let idx = -1;
         const process = () => {
+            // focus'ing can be problematic when running multiple terminals at the same time.
             term.focus();  // to make cursor visible
             if (idx === -1) {
                 term.write(frames[++idx].data);
@@ -512,7 +513,7 @@ const PngRenderer = function(parent, options, cast) {
     this.onprogress = function(percent) {};
 
     // Callback after successful PNG generated
-    this.onsuccess = function(data_url) {};
+    this.onsuccess = function(data_url, width, height) {};
 
     // Callback after failure
     this.onerror = function(message) {};
@@ -527,7 +528,10 @@ const PngRenderer = function(parent, options, cast) {
             this.onprogress(percent);
         };
         term_runner.onsuccess = () => {
-            this.onsuccess(last_state.canvas.toDataURL('image/png'));
+            const width = last_state.canvas.width;
+            const height = last_state.canvas.height;
+            const data_url = last_state.canvas.toDataURL('image/png');
+            this.onsuccess(data_url, width, height);
         };
         term_runner.onerror = this.onerror;
         term_runner.run(cast);
@@ -553,10 +557,10 @@ const create_terminal_element = function() {
     // affect the layout of the page. 'display: none' does not work
     // since the terminal does not get rendered.
     terminal.style.position = 'fixed';
-    terminal.style.bottom = 0;
-    terminal.style.right = 0;
-    terminal.style.opacity = 0;
-    terminal.style.zIndex = -1;
+    terminal.style.bottom = '0';
+    terminal.style.right = '0';
+    terminal.style.opacity = '0';
+    terminal.style.zIndex = '-1';
     return terminal;
 };
 
@@ -674,7 +678,7 @@ const modal = new ImgModal(document.getElementById('modal'));
     for (let i = 0; i < themes.length; ++i) {
         value_and_text.push({
             value: themes[i],
-            text: themes[i].replace('_', ' ')
+            text: themes[i].replace(/_/g, ' ')
         });
     }
     value_and_text.sort((a, b) => {
@@ -689,6 +693,54 @@ const modal = new ImgModal(document.getElementById('modal'));
             option.selected = 'selected';
         theme_element.appendChild(option);
     }
+}
+
+// Populate the theme grid.
+{
+    const preview_cast = function(name) {
+        const lines = [
+            '{"version": 2, "width": 24, "height": 10}',
+            `[0.00, "o", "${name}"]`
+        ]
+        return lines.join('\n');
+    };
+    const generate_previews = function() {
+        // These are run in succession, as opposed to running concurrently. This prevents
+        // trying to focus multiple terminals, which was seemingly causing excess onRender
+        // events.
+        const theme_grid = document.getElementById('theme_grid');
+        const themes = Object.keys(THEMES);
+        const generate_preview = function(idx) {
+            if (idx >= themes.length) return;
+            const theme = themes[idx];
+            const text = theme.replace(/_/g, ' ');
+            const options = {
+                size: 40,
+                contrast_gain: 1,
+                theme: theme,
+            };
+            const terminal = create_terminal_element();
+            const cast = preview_cast(text);
+            const png_renderer = new PngRenderer(terminal, options, cast);
+            png_renderer.onsuccess = function(data_url, width, height) {
+                remove_terminal_element(terminal);
+                const img = document.createElement('img');
+                img.src = data_url;
+                img.style.width = (width / 2).toString();
+                theme_grid.appendChild(img);
+                generate_preview(idx + 1);
+            };
+            png_renderer.run();
+        };
+        generate_preview(0);
+    };
+    let generated = false;
+    document.getElementById('theme_grid_link').ontoggle = function(e) {
+        if (e.target.open && !generated) {
+            generated = true;
+            generate_previews();
+        }
+    };
 }
 
 document.getElementById('file_selector').onchange = function(e) {
