@@ -373,12 +373,12 @@ const TermRunner = function(parent, options, cast) {
         // is written at the beginning to start the process.
         let idx = -1;
         const process = () => {
+            term.focus();  // to make cursor visible
             if (idx === -1) {
                 term.write(frames[++idx].data);
                 return;
             }
 
-            term.focus();  // to make cursor visible
             const text_canvas = parent.getElementsByClassName('xterm-text-layer')[0];
             const cursor_canvas = parent.getElementsByClassName('xterm-cursor-layer')[0];
 
@@ -399,22 +399,11 @@ const TermRunner = function(parent, options, cast) {
             context.drawImage(
                 cursor_canvas, padding, padding, cursor_canvas.width, cursor_canvas.height);
 
-            const data = context.getImageData(0, 0, width, height).data;
-            const pixels = [];
-            for (let i = 0; i < width * height; ++i) {
-                const r = data[i * 4];
-                const g = data[i * 4 + 1];
-                const b = data[i * 4 + 2];
-                const color = (r << 16) + (g << 8) + b;
-                pixels[i] = color;
-            }
             const state = {
                 idx: idx,
                 delay: frames[idx].delay,
                 num_frames: frames.length,
-                pixels: pixels,
-                width: width,
-                height: height
+                canvas: canvas
             }
             this.onstep(state);
 
@@ -445,7 +434,7 @@ const TermRunner = function(parent, options, cast) {
     };
 };
 
-const GifCast = function(parent, options, cast) {
+const GifRenderer = function(parent, options, cast) {
     // Callback before running
     this.oninit = function() {};
 
@@ -453,7 +442,7 @@ const GifCast = function(parent, options, cast) {
     this.onprogress = function(percent) {};
 
     // Callback after successful GIF generated
-    this.onsuccess = function(data_uri) {};
+    this.onsuccess = function(data_url) {};
 
     // Callback after failure
     this.onerror = function(message) {};
@@ -472,25 +461,73 @@ const GifCast = function(parent, options, cast) {
 
         term_runner.oninit = this.oninit;
         term_runner.onstep = (state) => {
-            const indexed_pixels = quantize(state.pixels, palette);
+            const context = state.canvas.getContext('2d');
+            const width = state.canvas.width;
+            const height = state.canvas.height;
+            const data = context.getImageData(0, 0, width, height).data;
+            const pixels = [];
+            for (let i = 0; i < width * height; ++i) {
+                const r = data[i * 4];
+                const g = data[i * 4 + 1];
+                const b = data[i * 4 + 2];
+                const color = (r << 16) + (g << 8) + b;
+                pixels[i] = color;
+            }
+            const indexed_pixels = quantize(pixels, palette);
             let delay = state.delay;
             if (gif === null) {
                 // Set 'loop' to 0 to continuously loop. Set 'loop' to
                 // undefined to not loop. Set 'loop' to N to loop N times.
                 const gopts = {palette: palette, loop: 0};
-                gif = new GifWriter(bytes, state.width, state.height, gopts);
+                gif = new GifWriter(bytes, width, height, gopts);
             }
             // omggif expects centi-seconds
             const gif_delay = delay * 100;
             const opts = {delay: gif_delay};
-            gif.addFrame(0, 0, state.width, state.height, indexed_pixels, opts);
+            gif.addFrame(0, 0, width, height, indexed_pixels, opts);
             const percent = 100.0 * (state.idx + 1) / state.num_frames;
             this.onprogress(percent);
         };
         term_runner.onsuccess = () => {
             const b64 = base64(bytes);
-            const data_uri = 'data:image/gif;base64,' + b64;
-            this.onsuccess(data_uri);
+            const data_url = 'data:image/gif;base64,' + b64;
+            this.onsuccess(data_url);
+        };
+        term_runner.onerror = this.onerror;
+        term_runner.run(cast);
+    };
+
+    this.run = function() {
+        // Utilize the event loop message queue with setTimeout to process oninit first.
+        setTimeout(this.oninit);
+        setTimeout(run);
+    };
+};
+
+const PngRenderer = function(parent, options, cast) {
+    // Callback before running
+    this.oninit = function() {};
+
+    // Callback for each progress update
+    this.onprogress = function(percent) {};
+
+    // Callback after successful PNG generated
+    this.onsuccess = function(data_url) {};
+
+    // Callback after failure
+    this.onerror = function(message) {};
+
+    const run = () => {
+        const term_runner = new TermRunner(parent, options, cast);
+        term_runner.oninit = this.oninit;
+        let last_state = null;
+        term_runner.onstep = (state) => {
+            last_state = state;
+            const percent = 100.0 * (state.idx + 1) / state.num_frames;
+            this.onprogress(percent);
+        };
+        term_runner.onsuccess = () => {
+            this.onsuccess(last_state.canvas.toDataURL('image/png'));
         };
         term_runner.onerror = this.onerror;
         term_runner.run(cast);
@@ -651,26 +688,27 @@ document.getElementById('render_button').onclick = function(e) {
     reader.onload = function() {
         const progress_setter = new ProgressSetter();
         const options = get_options();
-        const gifcast = new GifCast(document.getElementById('terminal'), options, reader.result);
-        gifcast.oninit = function() {
+        const terminal = document.getElementById('terminal');
+        const gif_renderer = new GifRenderer(terminal, options, reader.result);
+        gif_renderer.oninit = function() {
             show_loading();
             progress_setter.set(0.0);
             enable_fieldset(false);
         };
-        gifcast.onprogress = function(percent) {
+        gif_renderer.onprogress = function(percent) {
             progress_setter.set(percent);
         };
-        gifcast.onsuccess = function(data_uri) {
+        gif_renderer.onsuccess = function(data_url) {
             hide_loading();
             enable_fieldset();
-            modal.show(data_uri);
+            modal.show(data_url);
         };
-        gifcast.onerror = function(message) {
+        gif_renderer.onerror = function(message) {
             alert(message);
             hide_loading();
             enable_fieldset();
         };
-        gifcast.run();
+        gif_renderer.run();
     };
     reader.readAsText(files[0]);
     return false;
