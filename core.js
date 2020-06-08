@@ -421,7 +421,7 @@ const TermRunner = function(parent, options, cast) {
         term.onRender(process);
         term.open(parent);
         // Set <textarea readonly> so that a screen keyboard doesn't pop-up on mobile devices.
-        const textareas = terminal.getElementsByTagName('textarea');
+        const textareas = parent.getElementsByTagName('textarea');
         for (let i = 0; i < textareas.length; ++i) {
             textareas[i].readOnly = true;
         }
