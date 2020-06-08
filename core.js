@@ -695,12 +695,21 @@ const modal = new ImgModal(document.getElementById('modal'));
     }
 }
 
-// Populate the theme grid.
+// Populate the theme preview grid.
 {
-    const preview_cast = function(name) {
+    const preview_cast = function(name, light) {
         const lines = [
-            '{"version": 2, "width": 24, "height": 10}',
-            `[0.00, "o", "${name}"]`
+            '{"version": 2, "width": 24, "height": 9}',
+            `[0.00, "o", "\\u001b[m\\u001b[3${light ? 8 : 7}m// ${name}\\u001b[m\\r\\n"]`,
+            '[0.00, "o", "\\u001b[m\\r\\n"]',
+            '[0.00, "o", "\\u001b[m\\u001b[35m#include \\u001b[m\\u001b[31m<stdio.h>\\u001b[m\\r\\n"]',
+            '[0.00, "o", "\\u001b[m\\r\\n"]',
+            '[0.00, "o", "\\u001b[m\\u001b[32mint\\u001b[m main(\\u001b[32mvoid\\u001b[m) {\\r\\n"]',
+            '[0.00, "o", "\\u001b[m  printf(\\u001b[31m\\"hello \\"\\u001b[m);\\r\\n"]',
+            '[0.00, "o", "\\u001b[m  printf(\\u001b[31m\\"world\\u001b[m\\u001b[35m\\\\n"]',
+            '[0.00, "o", "\\u001b[m\\u001b[31m\\"\\u001b[m);\\r\\n"]',
+            '[0.00, "o", "\\u001b[m  \\u001b[33mreturn\\u001b[m \\u001b[31m0\\u001b[m;\\r\\n"]',
+            '[0.00, "o", "\\u001b[m}"]'
         ]
         return lines.join('\n');
     };
@@ -720,7 +729,7 @@ const modal = new ImgModal(document.getElementById('modal'));
                 theme: theme,
             };
             const terminal = create_terminal_element();
-            const cast = preview_cast(text);
+            const cast = preview_cast(text, text.endsWith('light'));
             const png_renderer = new PngRenderer(terminal, options, cast);
             png_renderer.onsuccess = function(data_url, width, height) {
                 remove_terminal_element(terminal);
