@@ -443,8 +443,6 @@ const TermRunner = function(parent, options, cast) {
         setTimeout(this.oninit);
         setTimeout(run);
     };
-
-    return this;
 };
 
 const GifCast = function(parent, options, cast) {
@@ -503,8 +501,6 @@ const GifCast = function(parent, options, cast) {
         setTimeout(this.oninit);
         setTimeout(run);
     };
-
-    return this;
 };
 
 // *************************************************
@@ -643,7 +639,7 @@ document.getElementById('render_button').onclick = function(e) {
     const reader = new FileReader();
     reader.onload = function() {
         const options = get_options();
-        const gifcast = GifCast(document.getElementById('terminal'), options, reader.result);
+        const gifcast = new GifCast(document.getElementById('terminal'), options, reader.result);
         gifcast.oninit = function() {
             show_loading();
             set_progress(0.0);
