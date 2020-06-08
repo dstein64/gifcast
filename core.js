@@ -371,12 +371,20 @@ const TermRunner = function(parent, options, cast) {
         // 'idx' is the index of frame being processed. Frames are written to
         // the terminal at the end of process(), except for the initial frame, which
         // is written at the beginning to start the process.
-        let idx = -1;
+        let idx = 0;
+        let focused = false;
+        let initialized = false;
         const process = () => {
-            // focus'ing can be problematic when running multiple terminals at the same time.
-            term.focus();  // to make cursor visible
-            if (idx === -1) {
-                term.write(frames[++idx].data);
+            if (!focused) {
+                focused = true;
+                // Call focus() to make the cursor visible, followed by a call to refresh() to
+                // force triggering a rendering event.
+                term.focus();
+                term.refresh();
+                return;
+            } else if (!initialized) {
+                initialized = true;
+                term.write(frames[0].data);
                 return;
             }
 
