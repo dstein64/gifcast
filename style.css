@@ -17,7 +17,7 @@ fieldset {
 }
 
 #loading {
-    display: none;
+    visibility: hidden;
 }
 
 #progress {

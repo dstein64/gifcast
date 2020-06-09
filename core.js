@@ -626,11 +626,13 @@ const ProgressSetter = function(delay = 200) {
 };
 
 const show_loading = function() {
-    document.getElementById('loading').style.display = 'initial';
+    const loading = document.getElementById('loading');
+    loading.style.visibility = 'visible';
+    loading.scrollIntoView();
 };
 
 const hide_loading = function() {
-    document.getElementById('loading').style.display = 'none';
+    document.getElementById('loading').style.visibility = null;
 };
 
 const ImgModal = function(parent) {
