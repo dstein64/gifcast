@@ -364,6 +364,7 @@ const TermRunner = function(parent, options, cast) {
             allowTransparency: false,
             theme: theme,
             fontSize: fontSize,
+            rendererType: 'canvas',
             minimumContrastRatio: options.contrast_gain,
         };
         const term = new Terminal(config);
