@@ -373,18 +373,13 @@ const TermRunner = function(parent, options, cast) {
         // the terminal at the end of process(), except for the initial frame, which
         // is written at the beginning to start the process.
         let idx = 0;
-        let focused = false;
         let initialized = false;
         const process = () => {
-            if (!focused) {
-                focused = true;
-                // Call focus() to make the cursor visible, followed by a call to refresh() to
-                // force triggering a rendering event.
-                term.focus();
-                term.refresh();
-                return;
-            } else if (!initialized) {
+            if (!initialized) {
                 initialized = true;
+                // Call focus() to make the cursor visible, followed by a write() call to
+                // trigger the next rendering event.
+                term.focus();
                 term.write(frames[0].data);
                 return;
             }
