@@ -354,7 +354,7 @@ const TermRunner = function(parent, options, cast) {
 
         // xtermjs scales the canvas depending on devicePixelRatio. Adjust for this so
         // that the generated GIF size is independent of devicePixelRatio.
-        const fontSize = options.size / window.devicePixelRatio;  // non-integer values seems to work
+        const font_size = options.size / window.devicePixelRatio;  // non-integer values seems to work
 
         const config = {
             cols: header.width,
@@ -363,27 +363,22 @@ const TermRunner = function(parent, options, cast) {
             cursorBlink: false,
             allowTransparency: false,
             theme: theme,
-            fontSize: fontSize,
+            fontSize: font_size,
             rendererType: 'canvas',
             minimumContrastRatio: options.contrast_gain,
         };
         const term = new Terminal(config);
 
-        // 'idx' is the index of frame being processed. Frames are written to
+        // 'idx' is the index of the frame being processed. Frames are written to
         // the terminal at the end of process(), except for the initial frame, which
         // is written at the beginning to start the process.
-        let idx = 0;
-        let initialized = false;
+        let idx = -1;
         const process = () => {
-            if (!initialized) {
-                initialized = true;
-                // Call focus() to make the cursor visible, followed by a write() call to
-                // trigger the next rendering event.
-                term.focus();
+            if (idx === -1) {
                 term.write(frames[0].data);
+                ++idx;
                 return;
             }
-
             const text_canvas = parent.getElementsByClassName('xterm-text-layer')[0];
             const cursor_canvas = parent.getElementsByClassName('xterm-cursor-layer')[0];
 
@@ -403,7 +398,6 @@ const TermRunner = function(parent, options, cast) {
                 text_canvas, padding, padding, text_canvas.width, text_canvas.height);
             context.drawImage(
                 cursor_canvas, padding, padding, cursor_canvas.width, cursor_canvas.height);
-
             const state = {
                 idx: idx,
                 delay: frames[idx].delay,
@@ -425,11 +419,27 @@ const TermRunner = function(parent, options, cast) {
 
         term.onRender(process);
         term.open(parent);
+        // Monkey patch the xterm.js renderer (see CursorRenderLayer.ts) so that calls to
+        // _renderBlurCursor become calls to _renderBlockCursor. This prevents an unfocused
+        // cursor.
+        const cursor_render_layer = term._core._renderService._renderer._renderLayers[3];
+        const patchable = cursor_render_layer._canvas.className === 'xterm-cursor-layer'
+            && '_renderBlurCursor' in cursor_render_layer
+            && '_renderBlockCursor' in cursor_render_layer;
+        if (!patchable) {
+            term.dispose();
+            this.onerror('Unsupported version of xterm.js.');
+            return;
+        }
+        cursor_render_layer._renderBlurCursor = cursor_render_layer._renderBlockCursor;
         // Set <textarea readonly> so that a screen keyboard doesn't pop-up on mobile devices.
         const textareas = parent.getElementsByTagName('textarea');
         for (let i = 0; i < textareas.length; ++i) {
             textareas[i].readOnly = true;
         }
+        // Have to focus to get the cursor to show up (even a blurred cursor won't show up without
+        // this).
+        term.focus();
     };
 
     this.run = function() {
@@ -717,41 +727,44 @@ const modal = new ImgModal(document.getElementById('modal'));
         ]
         return lines.join('\n');
     };
-    const generate_previews = function() {
-        // These are run in succession, as opposed to running concurrently. This prevents
-        // trying to focus multiple terminals, which was seemingly causing excess onRender
-        // events.
-        const theme_grid = document.getElementById('theme_grid');
-        const themes = Object.keys(THEMES);
-        const generate_preview = function(idx) {
-            if (idx >= themes.length) return;
-            const theme = themes[idx];
-            const text = theme.replace(/_/g, ' ');
-            const options = {
-                size: 40,
-                contrast_gain: 1,
-                theme: theme,
-            };
-            const terminal = create_terminal_element();
-            const cast = preview_cast(text, text.endsWith('light'));
-            const png_renderer = new PngRenderer(terminal, options, cast);
-            png_renderer.onsuccess = function(data_url, width, height) {
-                remove_terminal_element(terminal);
-                const img = document.createElement('img');
-                img.src = data_url;
-                img.style.width = (width / 2).toString();
-                theme_grid.appendChild(img);
-                generate_preview(idx + 1);
-            };
-            png_renderer.run();
-        };
-        generate_preview(0);
-    };
     let generated = false;
     document.getElementById('theme_grid_link').ontoggle = function(e) {
         if (e.target.open && !generated) {
             generated = true;
-            generate_previews();
+            // These are run in succession, as opposed to running concurrently. This prevents
+            // trying to focus multiple terminals, which was seemingly causing excess onRender
+            // events.
+            const theme_grid = document.getElementById('theme_grid');
+            const themes = Object.keys(THEMES);
+            const generate_preview = (idx) => {
+                if (idx >= themes.length) return;
+                const theme = themes[idx];
+                const text = theme.replace(/_/g, ' ');
+                const options = {
+                    size: 40,
+                    contrast_gain: 1,
+                    theme: theme,
+                };
+                const terminal = create_terminal_element();
+                const cast = preview_cast(text, text.endsWith('light'));
+                const png_renderer = new PngRenderer(terminal, options, cast);
+                png_renderer.onsuccess = function(data_url, width, height) {
+                    remove_terminal_element(terminal);
+                    const img = document.createElement('img');
+                    img.src = data_url;
+                    img.style.width = (width / 2).toString();
+                    theme_grid.appendChild(img);
+                    generate_preview(idx + 1);
+                };
+                png_renderer.onerror = function(message) {
+                    remove_terminal_element(terminal);
+                    document.getElementById('theme_grid_link').open = false;
+                    alert(message);
+                    generated = false;
+                };
+                png_renderer.run();
+            };
+            generate_preview(0);
         }
     };
 }
