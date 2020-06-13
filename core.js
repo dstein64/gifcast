@@ -240,7 +240,7 @@ const header_palette_theme = function(header_palette) {
 const extract_frames = function(events) {
     let frames = [{time: 0.0, data: ''}];
     for (let i = 0; i < events.length; ++i) {
-        [time, type, data] = events[i];
+        let [time, type, data] = events[i];
         if (type !== 'o') continue;
         frames.push({
             time: time,
