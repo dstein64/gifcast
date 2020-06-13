@@ -369,16 +369,11 @@ const TermRunner = function(parent, options, cast) {
         // 'idx' is the index of the frame being processed. Frames are written to
         // the terminal at the end of process(), except for the initial frame, which
         // is written at the beginning to start the process.
-        let idx = -1;
+        let idx = 0;
         const process = () => {
             // Don't process if there is more buffered data to write.
             if (term._core._writeBuffer._writeBuffer.length > 0) {
                 term.write('');  // trigger another rendering
-                return;
-            }
-            if (idx === -1) {
-                term.write(frames[0].data);
-                ++idx;
                 return;
             }
             const text_canvas = parent.getElementsByClassName('xterm-text-layer')[0];
@@ -442,6 +437,7 @@ const TermRunner = function(parent, options, cast) {
         // Have to focus to get the cursor to show up (even a blurred cursor won't show up without
         // this).
         term.focus();
+        term.write(frames[0].data);
     };
 
     this.run = function() {
