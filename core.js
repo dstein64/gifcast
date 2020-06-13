@@ -374,6 +374,11 @@ const TermRunner = function(parent, options, cast) {
         // is written at the beginning to start the process.
         let idx = -1;
         const process = () => {
+            // Don't process if there is more buffered data to write.
+            if (term._core._writeBuffer._writeBuffer.length > 0) {
+                term.write('');  // trigger another rendering
+                return;
+            }
             if (idx === -1) {
                 term.write(frames[0].data);
                 ++idx;
@@ -733,9 +738,6 @@ const modal = new ImgModal(document.getElementById('modal'));
     document.getElementById('theme_grid_link').ontoggle = function(e) {
         if (e.target.open && !generated) {
             generated = true;
-            // These are run in succession, as opposed to running concurrently. This prevents
-            // trying to focus multiple terminals, which was seemingly causing excess onRender
-            // events.
             const theme_grid = document.getElementById('theme_grid');
             const themes = Object.keys(THEMES);
             const generate_preview = (idx) => {
