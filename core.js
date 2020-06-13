@@ -238,9 +238,9 @@ const header_palette_theme = function(header_palette) {
 
 // Extract frames from the asciinema cast file events.
 const extract_frames = function(events) {
-    let frames = [{time: 0.0, data: ''}];
+    const frames = [{time: 0.0, data: ''}];
     for (let i = 0; i < events.length; ++i) {
-        let [time, type, data] = events[i];
+        const [time, type, data] = events[i];
         if (type !== 'o') continue;
         frames.push({
             time: time,
