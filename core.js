@@ -176,9 +176,6 @@ const closest = function(needle, haystack, exclude) {
     return idx;
 };
 
-// TODO: Use a separate palette for each frame, based on the colors in the frame.
-//       This will still require quantization to reduce the number of colors to
-//       256 or less (as required for GIF), perhaps using k-means color quantization.
 // Returns a palette that contains the required set of colors. Required colors are
 // included in the palette by replacing close colors in the BASE_PALETTE.
 const get_palette = function(required) {
