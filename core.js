@@ -363,6 +363,7 @@ const TermRunner = function(parent, options, cast) {
             fontSize: font_size,
             rendererType: 'canvas',
             minimumContrastRatio: options.contrast_gain,
+			fontFamily: options.font_family,
         };
         const term = new Terminal(config);
 
@@ -582,11 +583,13 @@ const remove_terminal_element = function(terminal) {
 
 const get_options = function() {
     const size = Number.parseInt(document.getElementById('size').value);
+    const font_family = document.getElementById('font_family').value;
     const contrast_gain = Number.parseInt(
         document.getElementById('contrast_gain').value);
     const theme = document.getElementById('theme').value;
     const options = {
         size: size,
+        font_family: font_family,
         contrast_gain: contrast_gain,
         theme: theme,
     };
@@ -741,6 +744,7 @@ const modal = new ImgModal(document.getElementById('modal'));
                     size: 40,
                     contrast_gain: 1,
                     theme: theme,
+    				font_family: document.getElementById('font_family').value,
                 };
                 const terminal = create_terminal_element();
                 const cast = preview_cast(text, text.endsWith('light'));
@@ -764,6 +768,20 @@ const modal = new ImgModal(document.getElementById('modal'));
             generate_preview(0);
         }
     };
+
+	// Refresh the theme grid when the font changes
+	document.getElementById('font_family').onchange = function(e) {
+		const theme_grid_link = document.getElementById('theme_grid_link');
+		const theme_grid = document.getElementById('theme_grid');
+
+		// Redraw theme if already drawn
+		theme_grid.innerHTML = '';
+		generated = false;
+
+		if(theme_grid_link.open) {
+			theme_grid_link.ontoggle({ target: theme_grid_link });
+		}
+	};
 }
 
 document.getElementById('file_selector').onchange = function(e) {
