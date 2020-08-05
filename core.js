@@ -11,6 +11,59 @@ const base64 = function(buffer) {
     return btoa(chars.join(''));
 };
 
+// Returns true if the font is available to the browser.
+const has_font = function() {
+    // First check if document.fonts.check is available and works as expected.
+    // As of 2020/08/04, document.fonts.check does not work on Firefox:
+    //   https://bugzilla.mozilla.org/show_bug.cgi?id=1252821
+    let fonts_api_available = false;
+    try {
+        const fake_status = document.fonts.check('12px font_name_that_does_not_exist');
+        const monospace_status = document.fonts.check('12px monospace');
+        fonts_api_available = !fake_status && monospace_status;
+    } catch {}
+
+    // If document.fonts.check is not viable (or returns false, per comment below),
+    // use an approach that checks for font availability by 1) creating a <span>
+    // with the specified font, using a base font as a fallback, and seeing if the
+    // width or height differs from a <span> constructed with the base font.
+
+    const base_fonts = ['monospace', 'sans-serif', 'serif'];
+    const string = 'The quick brown fox jumps over the lazy dog';
+    const body = document.body;
+    const span = document.createElement('span');
+    span.style.fontSize = '72px';
+    span.innerHTML = string;
+    const width_lookup = {};
+    const height_lookup = {};
+    for (const base_font of base_fonts) {
+        span.style.fontFamily = base_font;
+        body.appendChild(span);
+        width_lookup[base_font] = span.offsetWidth;
+        height_lookup[base_font] = span.offsetHeight;
+        body.removeChild(span);
+    }
+
+    function closure(font) {
+        // As of 2020/08/04, document.fonts.check('12px courier') returns false
+        // on Chrome on Ubuntu, even when the font is available. Only rely on this
+        // approach when the API worked as expected above, and check() returns true.
+        if (fonts_api_available && document.fonts.check('12px ' + font))
+            return true;
+        for (const base_font of base_fonts) {
+            span.style.fontFamily = font + ', ' + base_font;
+            body.appendChild(span);
+            const matched = span.offsetWidth !== width_lookup[base_font]
+                || span.offsetHeight !== height_lookup[base_font];
+            body.removeChild(span);
+            if (matched) return true;
+        }
+        return false;
+    }
+
+    return closure;
+}();
+
 // *************************************************
 // * Core
 // *************************************************
@@ -140,6 +193,41 @@ const THEMES = {
           selection: '#003f8e',
     },
 };
+
+const FONT_CANDIDATES = function() {
+    // WARN: Checking for font availability (with either document.fonts.check or using
+    //   the DOM) is slow on some browsers/platforms (e.g., around 30ms per font when
+    //   experimenting on Chrome on Linux for the first call, and negligible latency
+    //   for subsequent calls with the same font). Keep this list small to reduce the
+    //   latency.
+    // The list of monospace fonts was constructed by checking which fonts from
+    //   https://en.wikipedia.org/wiki/List_of_typefaces#Monospace
+    // are available on Ubuntu, Windows, or Mac.
+    // Fonts listed on Wikipedia:
+    //   andale mono, arial monospaced, bitstream vera, consolas, courier, courier new,
+    //   dejavu sans mono, droid sans mono, everson mono, fira mono, fira code, fixed,
+    //   fixedsys, hyperfont, ibm plex mono, inconsolata, letter gothic, liberation mono,
+    //   lucida console, lucida sans typewriter, lucida typewriter, menlo, micr, monaco,
+    //   monospace, ms gothic, ms mincho, nimbus mono l, ocr-a, ocr-b, pragmatapro,
+    //   prestige, prestige elite, profont, proggy clean, proggy square, proggy small,
+    //   proggy tiny, roboto mono, simhei, simsun, source code pro, terminal, ubuntu mono,
+    //   vera sans mono
+    let ubuntu_fonts = [
+        'courier new', 'dejavu sans mono', 'liberation mono', 'monospace', 'ms gothic',
+        'simhei', 'simsun', 'ubuntu mono'
+    ];
+    let windows_fonts = [
+        'consolas', 'courier', 'courier new', 'lucida console', 'lucida sans typewriter',
+        'monospace', 'ms gothic simsun'
+    ];
+    let mac_fonts = [
+        'andale mono', 'courier', 'courier new', 'dejavu sans mono', 'menlo', 'monaco',
+        'monospace'
+    ]
+    let fonts = Array.from(new Set(ubuntu_fonts.concat(windows_fonts).concat(mac_fonts)));
+    fonts.sort();
+    return fonts;
+}();
 
 // Converts a color string (e.g., 003f8e) to its corresponding integer.
 const int = function(string) {
@@ -363,7 +451,7 @@ const TermRunner = function(parent, options, cast) {
             fontSize: font_size,
             rendererType: 'canvas',
             minimumContrastRatio: options.contrast_gain,
-            fontFamily: options.font_family,
+            fontFamily: options.font + ', monospace',
         };
         const term = new Terminal(config);
 
@@ -583,13 +671,16 @@ const remove_terminal_element = function(terminal) {
 
 const get_options = function() {
     const size = Number.parseInt(document.getElementById('size').value);
-    const font_family = document.getElementById('font_family').value;
+    let font = document.getElementById('font').value;
+    if (!font) {
+        font = 'monospace';
+    }
     const contrast_gain = Number.parseInt(
         document.getElementById('contrast_gain').value);
     const theme = document.getElementById('theme').value;
     const options = {
         size: size,
-        font_family: font_family,
+        font: font,
         contrast_gain: contrast_gain,
         theme: theme,
     };
@@ -686,6 +777,37 @@ const ImgModal = function(parent) {
 
 const modal = new ImgModal(document.getElementById('modal'));
 
+// Populate the font dropdown menu and font examples.
+FONT_CANDIDATES.forEach((font) => {
+    const font_dropdown = document.getElementById('font');
+    const font_examples = document.getElementById('font_examples');
+    // Checking for font availability can be slow. Use an asyncronous callback
+    // for each font so that the UI is not blocked. The ordering is maintained
+    // since Javascript event loop events are processed in FIFO order.
+    setTimeout(() => {
+        if (!has_font(font)) return;
+        // Add a dropdown option.
+        const option = document.createElement('option');
+        option.value = font;
+        option.text = font;
+        if (font === 'monospace') {
+            option.selected = true;
+        }
+        font_dropdown.appendChild(option);
+        // Add an example.
+        const row = document.createElement('tr');
+        const key = document.createElement('td');
+        key.innerText = font;
+        const val = document.createElement('td');
+        val.style.fontFamily = font;
+        val.innerText = 'The quick brown fox jumps over the lazy dog';
+        row.appendChild(key);
+        row.appendChild(val);
+        row.appendChild(val);
+        font_examples.getElementsByTagName('tbody')[0].appendChild(row);
+    }, 0);
+});
+
 // Populate the theme dropdown menu.
 {
     const theme_element = document.getElementById('theme');
@@ -744,7 +866,7 @@ const modal = new ImgModal(document.getElementById('modal'));
                     size: 40,
                     contrast_gain: 1,
                     theme: theme,
-                    font_family: document.getElementById('font_family').value,
+                    font_family: 'monospace',
                 };
                 const terminal = create_terminal_element();
                 const cast = preview_cast(text, text.endsWith('light'));
@@ -766,20 +888,6 @@ const modal = new ImgModal(document.getElementById('modal'));
                 png_renderer.run();
             };
             generate_preview(0);
-        }
-    };
-
-    // Refresh the theme grid when the font changes
-    document.getElementById('font_family').onchange = function(e) {
-        const theme_grid_link = document.getElementById('theme_grid_link');
-        const theme_grid = document.getElementById('theme_grid');
-
-        // Redraw theme if already drawn
-        theme_grid.innerHTML = '';
-        generated = false;
-
-        if(theme_grid_link.open) {
-            theme_grid_link.ontoggle({ target: theme_grid_link });
         }
     };
 }

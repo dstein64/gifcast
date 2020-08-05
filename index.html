@@ -42,9 +42,16 @@
             <!-- This grid is populated by core.js -->
         </div>
     </details>
+    <details id="font_examples_link">
+        <summary><span class="summary">Fonts</span></summary>
+        <table id="font_examples">
+            <!-- This table is populated by core.js -->
+            <tbody></tbody>
+        </table>
+    </details>
     <form autocomplete="off">
         <fieldset id="fieldset">
-            <table>
+            <table id="options">
                 <tr>
                     <td><label for="file_selector">file</label></td>
                     <td>
@@ -52,24 +59,6 @@
                                type="file"
                                accept="application/x-asciicast, .cast"
                                value="">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <a class="tooltip">
-                            font
-                            <span>Set the font familiy.</span>
-                        </a>
-                    </td>
-                    <td>
-                        <select id="font_family">
-                            <option value="Courier New">Courier New</option>
-                            <option value="Courier">Courier</option>
-                            <option value="Lucida Console">Lucida Console</option>
-                            <option value="Lucida Sans Typewriter">Lucida Sans Typewriter</option>
-                            <option value="Monaco">Monaco</option>
-                            <option value="monospace" selected="selected">Monospace</option>
-                        </select>
                     </td>
                 </tr>
                 <tr>
@@ -91,6 +80,7 @@
                         </select>
                     </td>
                 </tr>
+                <tr><td><br></td></tr>
                 <tr>
                     <td>
                         <a class="tooltip">
@@ -105,6 +95,14 @@
                             <option value="7">medium</option><!-- Minimum for WCAG AAA compliance -->
                             <option value="14">high</option>
                             <option value="21">full</option><!-- White on black or black on white -->
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label for="font">font</label></td>
+                    <td>
+                        <select id="font">
+                            <!-- This menu is populated by core.js -->
                         </select>
                     </td>
                 </tr>
