@@ -226,7 +226,7 @@ const FONT_CANDIDATES = function() {
     ];
     // Also add two monospace fonts from /system/fonts on Android. Specifying these makes
     // them available from Firefox for Android, but not Chrome for Android.
-    let android_fonts = ['Cutive Mono', 'Droid Sans Mono'];
+    let android_fonts = ['cutive mono', 'droid sans mono'];
     let fonts = Array.from(new Set(
         ubuntu_fonts.concat(windows_fonts).concat(mac_fonts).concat(android_fonts)));
     fonts.sort();
