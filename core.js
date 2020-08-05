@@ -25,10 +25,11 @@ const has_font = function() {
 
     // If document.fonts.check is not viable (or returns false, per comment below),
     // use an approach that checks for font availability by 1) creating a <span>
-    // with the specified font, using a base font as a fallback, and seeing if the
-    // width or height differs from a <span> constructed with the base font.
+    // with the specified font, using a generic font as a fallback, and seeing if
+    // the width or height differs from a <span> constructed with the generic font.
 
-    const base_fonts = ['monospace', 'sans-serif', 'serif'];
+    // Generic fonts from: https://www.w3.org/TR/CSS2/fonts.html#generic-font-families
+    const generic_fonts = ['serif', 'sans-serif', 'cursive', 'fantasy', 'monospace'];
     const string = 'The quick brown fox jumps over the lazy dog';
     const body = document.body;
     const span = document.createElement('span');
@@ -36,25 +37,27 @@ const has_font = function() {
     span.innerHTML = string;
     const width_lookup = {};
     const height_lookup = {};
-    for (const base_font of base_fonts) {
-        span.style.fontFamily = base_font;
+    for (const generic_font of generic_fonts) {
+        span.style.fontFamily = generic_font;
         body.appendChild(span);
-        width_lookup[base_font] = span.offsetWidth;
-        height_lookup[base_font] = span.offsetHeight;
+        width_lookup[generic_font] = span.offsetWidth;
+        height_lookup[generic_font] = span.offsetHeight;
         body.removeChild(span);
     }
 
     function closure(font) {
+        if (generic_fonts.includes(font))
+            return true;
         // As of 2020/08/04, document.fonts.check('12px courier') returns false
         // on Chrome on Ubuntu, even when the font is available. Only rely on this
         // approach when the API worked as expected above, and check() returns true.
         if (fonts_api_available && document.fonts.check('12px ' + font))
             return true;
-        for (const base_font of base_fonts) {
-            span.style.fontFamily = font + ', ' + base_font;
+        for (const generic_font of generic_fonts) {
+            span.style.fontFamily = font + ', ' + generic_font;
             body.appendChild(span);
-            const matched = span.offsetWidth !== width_lookup[base_font]
-                || span.offsetHeight !== height_lookup[base_font];
+            const matched = span.offsetWidth !== width_lookup[generic_font]
+                || span.offsetHeight !== height_lookup[generic_font];
             body.removeChild(span);
             if (matched) return true;
         }
@@ -212,23 +215,29 @@ const FONT_CANDIDATES = function() {
     //   prestige, prestige elite, profont, proggy clean, proggy square, proggy small,
     //   proggy tiny, roboto mono, simhei, simsun, source code pro, terminal, ubuntu mono,
     //   vera sans mono
+    let set = new Set();
     let ubuntu_fonts = [
         'courier new', 'dejavu sans mono', 'liberation mono', 'monospace', 'ms gothic',
         'simhei', 'simsun', 'ubuntu mono'
     ];
+    ubuntu_fonts.forEach(set.add, set);
     let windows_fonts = [
         'consolas', 'courier', 'courier new', 'lucida console', 'lucida sans typewriter',
         'monospace', 'ms gothic simsun'
     ];
+    windows_fonts.forEach(set.add, set);
     let mac_fonts = [
         'andale mono', 'courier', 'courier new', 'dejavu sans mono', 'menlo', 'monaco',
         'monospace'
     ];
+    mac_fonts.forEach(set.add, set);
     // Also add two monospace fonts from /system/fonts on Android. Specifying these makes
     // them available from Firefox for Android, but not Chrome for Android.
     let android_fonts = ['cutive mono', 'droid sans mono'];
-    let fonts = Array.from(new Set(
-        ubuntu_fonts.concat(windows_fonts).concat(mac_fonts).concat(android_fonts)));
+    android_fonts.forEach(set.add, set);
+    // Lastly, make sure that the generic 'monospace' font is available.
+    set.add('monospace');
+    let fonts = Array.from(set);
     fonts.sort();
     return fonts;
 }();
