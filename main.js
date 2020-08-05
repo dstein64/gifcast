@@ -799,25 +799,27 @@ FONT_CANDIDATES.forEach((font) => {
     // for each font so that the UI is not blocked. The ordering is maintained
     // since Javascript event loop events are processed in FIFO order.
     setTimeout(() => {
-        if (!has_font(font)) return;
-        // Add a dropdown option.
-        const option = document.createElement('option');
-        option.value = font;
-        option.text = font;
-        if (font === 'monospace')
-            option.selected = true;
-        font_dropdown.appendChild(option);
-        // Add an example.
-        const row = document.createElement('tr');
-        const key = document.createElement('td');
-        key.innerText = font;
-        const val = document.createElement('td');
-        val.style.fontFamily = font;
-        val.innerText = 'The quick brown fox jumps over the lazy dog';
-        row.appendChild(key);
-        row.appendChild(val);
-        row.appendChild(val);
-        font_examples.getElementsByTagName('tbody')[0].appendChild(row);
+        if (has_font(font)) {
+            // Add a dropdown option.
+            const option = document.createElement('option');
+            option.value = font;
+            option.text = font;
+            if (font === 'monospace')
+                option.selected = true;
+            font_dropdown.appendChild(option);
+            // Add an example.
+            const row = document.createElement('tr');
+            const key = document.createElement('td');
+            key.innerText = font;
+            const val = document.createElement('td');
+            val.style.fontFamily = font;
+            val.innerText = 'The quick brown fox jumps over the lazy dog';
+            row.appendChild(key);
+            row.appendChild(val);
+            row.appendChild(val);
+            font_examples.getElementsByTagName('tbody')[0].appendChild(row);
+        }
+        // Enable dropdown after processing the last candidate.
         if (num_candidates > 0 && font === FONT_CANDIDATES[num_candidates - 1]) {
             font_dropdown.removeChild(document.getElementById('initial_font'));
             font_dropdown.disabled = false;
