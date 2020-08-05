@@ -953,3 +953,11 @@ document.getElementById('render_button').onclick = function(e) {
     reader.readAsText(files[0]);
     return false;
 };
+
+// Force a page reload when gifcast is loaded from cache. This prevents an issue on
+// Firefox, where clicking the back button to return to gifcast results in no file
+// selected with the render button enabled if a file was selected earlier.
+window.addEventListener('pageshow', (e) => {
+    if (e.persisted)
+        window.location.reload();
+});
