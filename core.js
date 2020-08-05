@@ -794,6 +794,7 @@ const modal = new ImgModal(document.getElementById('modal'));
 FONT_CANDIDATES.forEach((font) => {
     const font_dropdown = document.getElementById('font');
     const font_examples = document.getElementById('font_examples');
+    const num_candidates = FONT_CANDIDATES.length;
     // Checking for font availability can be slow. Use an asyncronous callback
     // for each font so that the UI is not blocked. The ordering is maintained
     // since Javascript event loop events are processed in FIFO order.
@@ -803,9 +804,8 @@ FONT_CANDIDATES.forEach((font) => {
         const option = document.createElement('option');
         option.value = font;
         option.text = font;
-        if (font === 'monospace') {
+        if (font === 'monospace')
             option.selected = true;
-        }
         font_dropdown.appendChild(option);
         // Add an example.
         const row = document.createElement('tr');
@@ -818,6 +818,10 @@ FONT_CANDIDATES.forEach((font) => {
         row.appendChild(val);
         row.appendChild(val);
         font_examples.getElementsByTagName('tbody')[0].appendChild(row);
+        if (num_candidates > 0 && font === FONT_CANDIDATES[num_candidates - 1]) {
+            font_dropdown.removeChild(document.getElementById('initial_font'));
+            font_dropdown.disabled = false;
+        }
     }, 0);
 });
 
