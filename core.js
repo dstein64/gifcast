@@ -200,7 +200,7 @@ const FONT_CANDIDATES = function() {
     //   experimenting on Chrome on Linux for the first call, and negligible latency
     //   for subsequent calls with the same font). Keep this list small to reduce the
     //   latency.
-    // The list of monospace fonts was constructed by checking which fonts from
+    // The list of monospace fonts was primarily constructed by checking which fonts from
     //   https://en.wikipedia.org/wiki/List_of_typefaces#Monospace
     // are available on Ubuntu, Windows, or Mac.
     // Fonts listed on Wikipedia:
@@ -223,8 +223,12 @@ const FONT_CANDIDATES = function() {
     let mac_fonts = [
         'andale mono', 'courier', 'courier new', 'dejavu sans mono', 'menlo', 'monaco',
         'monospace'
-    ]
-    let fonts = Array.from(new Set(ubuntu_fonts.concat(windows_fonts).concat(mac_fonts)));
+    ];
+    // Also add two monospace fonts from /system/fonts on Android. Specifying these makes
+    // them available from Firefox for Android, but not Chrome for Android.
+    let android_fonts = ['Cutive Mono', 'Droid Sans Mono'];
+    let fonts = Array.from(new Set(
+        ubuntu_fonts.concat(windows_fonts).concat(mac_fonts).concat(android_fonts)));
     fonts.sort();
     return fonts;
 }();
