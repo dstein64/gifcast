@@ -462,7 +462,6 @@ const TermRunner = function(parent, options, cast) {
         const config = {
             cols: header.width,
             rows: header.height,
-            cursorStyle: 'block',
             cursorBlink: false,
             allowTransparency: false,
             theme: theme,
@@ -471,6 +470,9 @@ const TermRunner = function(parent, options, cast) {
             minimumContrastRatio: options.contrast_gain,
             fontFamily: options.font + ', monospace',
         };
+        // Cursor can possibly be 'none', which is not a valid setting for xtermjs.
+        if (['bar', 'block', 'underline'].includes(options.cursor))
+            config.cursorStyle = options.cursor;
         const term = new Terminal(config);
 
         // 'idx' is the index of the frame being processed. Frames are written to
@@ -500,8 +502,10 @@ const TermRunner = function(parent, options, cast) {
 
             context.drawImage(
                 text_canvas, padding, padding, text_canvas.width, text_canvas.height);
-            context.drawImage(
-                cursor_canvas, padding, padding, cursor_canvas.width, cursor_canvas.height);
+            if (options.cursor !== 'none') {
+                context.drawImage(
+                    cursor_canvas, padding, padding, cursor_canvas.width, cursor_canvas.height);
+            }
             const state = {
                 idx: idx,
                 delay: frames[idx].delay,
@@ -696,11 +700,13 @@ const get_options = function() {
     const contrast_gain = Number.parseInt(
         document.getElementById('contrast_gain').value);
     const theme = document.getElementById('theme').value;
+    const cursor = document.getElementById('cursor').value;
     const options = {
         size: size,
         font: font,
         contrast_gain: contrast_gain,
         theme: theme,
+        cursor: cursor,
     };
     return options;
 };
@@ -807,7 +813,6 @@ FONT_CANDIDATES.forEach((font) => {
         if (has_font(font)) {
             // Add a dropdown option.
             const option = document.createElement('option');
-            option.value = font;
             option.text = font;
             if (font === 'monospace')
                 option.selected = true;
@@ -891,6 +896,7 @@ FONT_CANDIDATES.forEach((font) => {
                     contrast_gain: 1,
                     theme: theme,
                     font_family: 'monospace',
+                    cursor: 'block',
                 };
                 const terminal = create_terminal_element();
                 const cast = preview_cast(text, text.endsWith('light'));

@@ -99,12 +99,23 @@
                     </td>
                 </tr>
                 <tr>
+                    <td><label for="cursor">cursor</label></td>
+                    <td>
+                        <select id="cursor">
+                            <option>bar</option>
+                            <option selected="selected">block</option>
+                            <option>none</option>
+                            <option>underline</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
                     <td><label for="font">font</label></td>
                     <td>
                         <select id="font" disabled>
                             <!-- This menu is populated by core.js -->
                             <!-- The initial 'monospace' default is deleted once the fonts are loaded -->
-                            <option id="initial_font" value="monospace">monospace</option>
+                            <option id="initial_font">monospace</option>
                         </select>
                     </td>
                 </tr>
