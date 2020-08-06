@@ -11,7 +11,12 @@ const base64 = function(buffer) {
     return btoa(chars.join(''));
 };
 
-// Returns true if the font is available to the browser.
+// has_font takes a font name and returns true if the font is available to the browser.
+// The function signature is not immediately clear from the line of code that follows
+// this comment, as the function is constructed as a closure returned by calling an
+// anonymous function.
+//   has_font signature:
+//     boolean has_font(string name);
 const has_font = function() {
     // First check if document.fonts.check is available and works as expected.
     // As of 2020/08/04, document.fonts.check does not work on Firefox:
