@@ -114,7 +114,10 @@ const BASE_PALETTE = [
     0xa8a8a8, 0xb2b2b2, 0xbcbcbc, 0xc6c6c6, 0xd0d0d0, 0xdadada, 0xe4e4e4, 0xeeeeee,
 ];
 
-// The themes are from VS code, with the VS-specific themes excluded.
+// Some themes are from VS code, with the VS-specific themes excluded.
+// These include:
+//   abyss, dark, high contrast, kimbie dark, light, monokai, monokai dimmed,
+//   quiet light, red, solarized dark, solarized light, tomorrow night blue
 // Data are from the corresponding JSON files
 // * E.g., https://github.com/microsoft/vscode/blob/master/extensions/
 //                 theme-abyss/themes/abyss-color-theme.json
@@ -130,6 +133,8 @@ const BASE_PALETTE = [
 //   (excluding alpha channel)
 //   otherwise #000040 for light themes, #FFFF40 for dark themes,
 //   and #FFFF80 for high contrast themes
+// Some themes are contributions from pull requests:
+//  gruvbox dark, gruvbox light (PR #5)
 const THEMES = {
     abyss: {
               black: '#111111',          red: '#ff9da4',       green: '#d1f1a9',       yellow: '#ffeead',
@@ -142,6 +147,22 @@ const THEMES = {
     dark: {
          background: '#1e1e1e',   foreground: '#d4d4d4',      cursor: '#d4d4d4', cursorAccent: '#1e1e1e',
           selection: '#ffff40',
+    },
+    gruvbox_dark: {
+              black: '#282828',          red: '#cc241d',       green: '#98971a',       yellow: '#d79921',
+               blue: '#458588',       purple: '#b16286',        cyan: '#689d6a',        white: '#a89984',
+        brightBlack: '#928374',    brightRed: '#fb4934', brightGreen: '#b8bb26', brightYellow: '#fabd2f',
+         brightBlue: '#83a598', brightPurple: '#d3869b',  brightCyan: '#8ec07c',  brightWhite: '#ebdbb2',
+         background: '#282828',   foreground: '#ebdbb2',      cursor: '#ebdbb2', cursorAccent: '#002451',
+          selection: '#003f8e',
+    },
+    gruvbox_light: {
+              black: '#fbf1c7',          red: '#cc241d',       green: '#98971a',       yellow: '#d79921',
+               blue: '#458588',       purple: '#b16286',        cyan: '#689d6a',        white: '#a89984',
+        brightBlack: '#928374',    brightRed: '#fb4934', brightGreen: '#b8bb26', brightYellow: '#fabd2f',
+         brightBlue: '#83a598', brightPurple: '#d3869b',  brightCyan: '#8ec07c',  brightWhite: '#ebdbb2',
+         background: '#fbf1c7',   foreground: '#3c3836',      cursor: '#002451', cursorAccent: '#ebdbb2',
+          selection: '#a89984',
     },
     high_contrast: {
          background: '#000000',   foreground: '#ffffff',      cursor: '#ffffff', cursorAccent: '#000000',
@@ -199,22 +220,6 @@ const THEMES = {
          brightBlue: '#80baff', brightPurple: '#d778ff',  brightCyan: '#78ffff',  brightWhite: '#ffffff',
          background: '#002451',   foreground: '#ffffff',      cursor: '#ffffff', cursorAccent: '#002451',
           selection: '#003f8e',
-    },
-    gruvbox_dark: {
-              black: '#282828',          red: '#cc241d',       green: '#98971a',       yellow: '#d79921',
-               blue: '#458588',       purple: '#b16286',        cyan: '#689d6a',        white: '#a89984',
-        brightBlack: '#928374',    brightRed: '#fb4934', brightGreen: '#b8bb26', brightYellow: '#fabd2f',
-         brightBlue: '#83a598', brightPurple: '#d3869b',  brightCyan: '#8ec07c',  brightWhite: '#ebdbb2',
-         background: '#282828',   foreground: '#ebdbb2',      cursor: '#ebdbb2', cursorAccent: '#002451',
-          selection: '#003f8e',
-    },
-    gruvbox_light: {
-              black: '#fbf1c7',          red: '#cc241d',       green: '#98971a',       yellow: '#d79921',
-               blue: '#458588',       purple: '#b16286',        cyan: '#689d6a',        white: '#a89984',
-        brightBlack: '#928374',    brightRed: '#fb4934', brightGreen: '#b8bb26', brightYellow: '#fabd2f',
-         brightBlue: '#83a598', brightPurple: '#d3869b',  brightCyan: '#8ec07c',  brightWhite: '#ebdbb2',
-         background: '#fbf1c7',   foreground: '#3c3836',      cursor: '#002451', cursorAccent: '#ebdbb2',
-          selection: '#a89984',
     },
 };
 
