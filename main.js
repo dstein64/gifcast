@@ -619,7 +619,6 @@ const GifRenderer = function(parent, options, cast) {
             }
             if (palette === null) {
                 const required = [];
-                debugger;
                 for (const value of Object.values(state.config.theme)) {
                     required.push(int(value));
                 }
