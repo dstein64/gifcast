@@ -531,7 +531,8 @@ const TermRunner = function(parent, options, cast) {
                 idx: idx,
                 delay: frames[idx].delay,
                 num_frames: frames.length,
-                canvas: canvas
+                canvas: canvas,
+                config: config
             }
             this.onstep(state);
 
@@ -597,12 +598,10 @@ const GifRenderer = function(parent, options, cast) {
         const bytes = [];
         // This is initialized later, when we have the actual dimensions available.
         let gif = null;
-
-        const required = [];
-        for (const value of Object.values(options.theme)) {
-            required.push(int(value));
-        }
-        const palette = get_palette(required);
+        // This is initialized later, when we have the colors. If a theme was already
+        // selected, we'd know the colors here. But when theme=none, it's possible for
+        // colors to be specified in the cast header, which hasn't been parsed yet.
+        let palette = null;
 
         term_runner.oninit = this.oninit;
         term_runner.onstep = (state) => {
@@ -617,6 +616,14 @@ const GifRenderer = function(parent, options, cast) {
                 const b = data[i * 4 + 2];
                 const color = (r << 16) + (g << 8) + b;
                 pixels[i] = color;
+            }
+            if (palette === null) {
+                const required = [];
+                debugger;
+                for (const value of Object.values(state.config.theme)) {
+                    required.push(int(value));
+                }
+                palette = get_palette(required);
             }
             const indexed_pixels = quantize(pixels, palette);
             let delay = state.delay;
