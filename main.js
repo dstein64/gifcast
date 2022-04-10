@@ -885,7 +885,7 @@ FONT_CANDIDATES.forEach((font) => {
         option.value = value;
         option.text = text;
         if (value === 'none')
-            option.selected = 'selected';
+            option.selected = true;
         theme_element.appendChild(option);
     }
 }
