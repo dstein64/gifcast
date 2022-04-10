@@ -966,6 +966,7 @@ FONT_CANDIDATES.forEach((font) => {
                     theme: theme,
                     font_family: 'monospace',
                     cursor: 'block',
+                    shave: {top: 0, left: 0, bottom: 0, right: 0},
                 };
                 const terminal = create_terminal_element();
                 const cast = preview_cast(text, text.endsWith('light'));
