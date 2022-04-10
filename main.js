@@ -413,7 +413,7 @@ const parse_cast = function(cast) {
     try {
         header = JSON.parse(lines[0]);  // throws a SyntaxError
     } catch(e) {
-        throw Error('Error parsing JSON.')
+        throw Error('Error parsing JSON.');
     }
     if (header.version !== 2) throw Error('gifcast only supports asciinema cast version 2.');
     const events = [];
