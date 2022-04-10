@@ -127,6 +127,34 @@
                         </select>
                     </td>
                 </tr>
+                <tr>
+                    <td><a class="tooltip">
+                        shave
+                        <span>
+                            Specifies the number of cells to remove from each corresponding edge.
+                        </span>
+                    </a></td>
+                    <td>
+                        <table>
+                            <tr>
+                                <td rowspan="2">
+                                    <input id="shave_left" class="shave" type="number" value="0" min="0">
+                                </td>
+                                <td>
+                                    <input id="shave_top" class="shave" type="number" value="0" min="0">
+                                </td>
+                                <td rowspan="2">
+                                    <input id="shave_right" class="shave" type="number" value="0" min="0">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <input id="shave_bottom" class="shave" type="number" value="0" min="0">
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
             </table>
             <br>
             <button id="render_button" disabled>Render</button>

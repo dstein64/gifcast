@@ -480,9 +480,11 @@ const TermRunner = function(parent, options, cast) {
         // that the generated GIF size is independent of devicePixelRatio.
         const font_size = options.size / window.devicePixelRatio;  // non-integer values seems to work
 
+        const cols = header.width;
+        const rows = header.height;
         const config = {
-            cols: header.width,
-            rows: header.height,
+            cols: cols,
+            rows: rows,
             cursorBlink: false,
             allowTransparency: false,
             theme: theme,
@@ -508,24 +510,59 @@ const TermRunner = function(parent, options, cast) {
             }
             const text_canvas = parent.getElementsByClassName('xterm-text-layer')[0];
             const cursor_canvas = parent.getElementsByClassName('xterm-cursor-layer')[0];
+            if (text_canvas.height !== cursor_canvas.height
+                    || text_canvas.width !== cursor_canvas.width) {
+                // The code assumes that the text canvas and cursor canvas are the same size.
+                this.onerror('Canvas size mismatch.');
+                return;
+            }
 
             const padding = Math.ceil(PADDING_FACTOR * options.size);
 
-            const canvas = parent.ownerDocument.createElement('canvas');
-            const width = text_canvas.width + 2 * padding;
-            const height = text_canvas.height + 2 * padding;
+            const px_per_row = text_canvas.height / rows;
+            const px_per_col = text_canvas.width / cols;
 
-            canvas.width = width;
-            canvas.height = height;
+            const shaved_rows = rows - options.shave.top - options.shave.bottom;
+            if (shaved_rows <= 0) {
+                let msg = 'Not enough rows.';
+                if (options.shave.top > 0 || options.shave.bottom > 0)
+                    msg += ' Try to decrease the shave quantities.';
+                this.onerror(msg);
+                return;
+            }
+            const shaved_cols = cols - options.shave.left - options.shave.right;
+            if (shaved_cols <= 0) {
+                let msg = 'Not enough columns.';
+                if (options.shave.left > 0 || options.shave.right > 0)
+                    msg += ' Try to decrease the shave quantities.';
+                this.onerror(msg);
+                return;
+            }
+
+            const width = shaved_cols * px_per_col;
+            const height = shaved_rows * px_per_row;
+
+            const canvas = parent.ownerDocument.createElement('canvas');
+            const padded_width = width + 2 * padding;
+            const padded_height = height + 2 * padding;
+
+            canvas.width = padded_width;
+            canvas.height = padded_height;
             const context = canvas.getContext('2d');
             context.fillStyle = theme.background;
-            context.fillRect(0, 0, width, height);
+            context.fillRect(0, 0, padded_width, padded_height);
 
+            const source_x = options.shave.left * px_per_col;
+            const source_y = options.shave.top * px_per_row;
             context.drawImage(
-                text_canvas, padding, padding, text_canvas.width, text_canvas.height);
+                text_canvas,
+                source_x, source_y, width, height,
+                padding, padding, width, height);
             if (options.cursor !== 'none') {
                 context.drawImage(
-                    cursor_canvas, padding, padding, cursor_canvas.width, cursor_canvas.height);
+                    cursor_canvas,
+                    source_x, source_y, width, height,
+                    padding, padding, width, height);
             }
             const state = {
                 idx: idx,
@@ -728,12 +765,17 @@ const get_options = function() {
         document.getElementById('contrast_gain').value);
     const theme = document.getElementById('theme').value;
     const cursor = document.getElementById('cursor').value;
+    const shave = {};
+    for (const pos of ['top', 'left', 'bottom', 'right']) {
+        shave[pos] = Number.parseInt(document.getElementById('shave_' + pos).value);
+    }
     const options = {
         size: size,
         font: font,
         contrast_gain: contrast_gain,
         theme: theme,
         cursor: cursor,
+        shave: shave,
     };
     return options;
 };
@@ -956,6 +998,19 @@ document.getElementById('file_selector').onchange = function(e) {
 };
 
 document.getElementById('render_button').onclick = function(e) {
+    // Ensure that shave inputs are valid.
+    for (const pos of ['top', 'left', 'bottom', 'right']) {
+        const input = document.getElementById('shave_' + pos);
+        const parsed = Number.parseFloat(input.value);
+        // Convert to integer.
+        if (Number.isFinite(parsed) && !Number.isInteger(parsed)) {
+            input.value = Math.round(parsed).toString();
+        }
+        // Convert empty or invalid to 0.
+        if (!Number.isFinite(parsed)) {
+            input.value = '0';
+        }
+    }
     const file_selector = document.getElementById('file_selector');
     const files = file_selector.files;
     if (!FileReader || !files || !files.length) {
