@@ -870,7 +870,8 @@ const ImgModal = function(parent) {
 
 const modal = new ImgModal(document.getElementById('modal'));
 
-// A state is used in order to prevent the rendering logic from running when an image was created and we can reuse it.
+// A state is used in order to prevent the rendering logic from running when an
+// image was created and we can reuse it.
 const SettingsState = function() {
     this.changed = false;
     this.data_url = null;
@@ -892,7 +893,7 @@ const SettingsState = function() {
 
 const settingsState = new SettingsState();
 
-// set callback to invalidate state when any option is changed
+// Set callback to invalidate state when any option is changed.
 document.getElementById('options').onchange = function(e) {
     settingsState.change();
 };
