@@ -876,7 +876,7 @@ const SettingsState = function() {
     this.changed = false;
     this.data_url = null;
 
-    this.change = function(src) {
+    this.change = function() {
         this.changed = true;
     };
 
@@ -885,7 +885,7 @@ const SettingsState = function() {
         this.data_url = src;
     };
 
-    this.getDataUrl = function(src) {
+    this.getDataUrl = function() {
         if (this.changed) return null;
         return this.data_url;
     };
