@@ -886,8 +886,7 @@ const SettingsState = function() {
     };
 
     this.getDataUrl = function() {
-        if (this.changed) return null;
-        return this.data_url;
+        return this.changed ? null : this.data_url;
     };
 };
 
