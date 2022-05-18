@@ -870,6 +870,33 @@ const ImgModal = function(parent) {
 
 const modal = new ImgModal(document.getElementById('modal'));
 
+// A state is used in order to prevent the rendering logic from running when an image was created and we can reuse it.
+const SettingsState = function() {
+    this.changed = false;
+    this.data_url = null;
+
+    this.change = function(src) {
+        this.changed = true;
+    };
+
+    this.setDataUrl = function(src) {
+        this.changed = false;
+        this.data_url = src;
+    };
+
+    this.getDataUrl = function(src) {
+        if (this.changed) return null;
+        return this.data_url;
+    };
+};
+
+const settingsState = new SettingsState();
+
+// set callback to invalidate state when any option is changed
+document.getElementById('options').onchange = function(e) {
+    settingsState.change();
+};
+
 // Populate the font dropdown menu and font examples.
 FONT_CANDIDATES.forEach((font) => {
     const font_dropdown = document.getElementById('font');
@@ -999,6 +1026,12 @@ document.getElementById('file_selector').onchange = function(e) {
 };
 
 document.getElementById('render_button').onclick = function(e) {
+    const previous_data_url = settingsState.getDataUrl();
+    if (previous_data_url != null) {
+        modal.show(previous_data_url);
+        return false;
+    }
+
     // Ensure that shave inputs are valid.
     for (const pos of ['top', 'left', 'bottom', 'right']) {
         const input = document.getElementById('shave_' + pos);
@@ -1037,6 +1070,7 @@ document.getElementById('render_button').onclick = function(e) {
             hide_loading();
             enable_fieldset();
             modal.show(data_url);
+            settingsState.setDataUrl(data_url);
         };
         gif_renderer.onerror = function(message) {
             remove_terminal_element(terminal);
