@@ -870,31 +870,35 @@ const ImgModal = function(parent) {
 
 const modal = new ImgModal(document.getElementById('modal'));
 
-// A state is used in order to prevent the rendering logic from running when an
+// A cache is used in order to prevent the rendering logic from running when an
 // image was created and we can reuse it.
-const SettingsState = function() {
-    this.changed = false;
-    this.data_url = null;
+const Cache = function() {
+    let valid = false;
+    let data = null;
 
-    this.change = function() {
-        this.changed = true;
+    this.valid = function() {
+        return valid;
     };
 
-    this.setDataUrl = function(src) {
-        this.changed = false;
-        this.data_url = src;
+    this.invalidate = function() {
+        valid = false;
     };
 
-    this.getDataUrl = function() {
-        return this.changed ? null : this.data_url;
+    this.set = function(value) {
+        valid = true;
+        data = value;
+    };
+
+    this.get = function() {
+        return valid ? data : null;
     };
 };
 
-const settingsState = new SettingsState();
+const cache = new Cache();
 
 // Set callback to invalidate state when any option is changed.
 document.getElementById('options').onchange = function(e) {
-    settingsState.change();
+    cache.invalidate();
 };
 
 // Populate the font dropdown menu and font examples.
@@ -1026,9 +1030,8 @@ document.getElementById('file_selector').onchange = function(e) {
 };
 
 document.getElementById('render_button').onclick = function(e) {
-    const previous_data_url = settingsState.getDataUrl();
-    if (previous_data_url != null) {
-        modal.show(previous_data_url);
+    if (cache.valid()) {
+        modal.show(cache.get());
         return false;
     }
 
@@ -1070,7 +1073,7 @@ document.getElementById('render_button').onclick = function(e) {
             hide_loading();
             enable_fieldset();
             modal.show(data_url);
-            settingsState.setDataUrl(data_url);
+            cache.set(data_url);
         };
         gif_renderer.onerror = function(message) {
             remove_terminal_element(terminal);
