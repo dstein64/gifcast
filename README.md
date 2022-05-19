@@ -26,7 +26,7 @@ To record an asciinema cast, launch a new recording for your session, and termin
 the session with `Ctrl-D`.
 
 ```sh
-$ asciinema rec PATH/FILENAME.cast
+asciinema rec PATH/FILENAME.cast
 ```
 
 ## Example
