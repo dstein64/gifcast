@@ -3,38 +3,38 @@
  * ************************************************* */
 
 table#options {
-    border-collapse: separate;
-    border-spacing: 3px 5px;
+  border-collapse: separate;
+  border-spacing: 3px 5px;
 }
 
 table#options > tbody > tr > td:nth-child(1) {
-    text-align: right;
+  text-align: right;
 }
 
 fieldset {
-    border: 0;
-    padding: 0;
+  border: 0;
+  padding: 0;
 }
 
 #loading {
-    visibility: hidden;
+  visibility: hidden;
 }
 
 #progress {
-    vertical-align: middle;
+  vertical-align: middle;
 }
 
 #progress_text {
-    vertical-align: middle;
+  vertical-align: middle;
 }
 
 #rendered {
-    max-width: 100%;
-    height: auto;
+  max-width: 100%;
+  height: auto;
 }
 
 .shave {
-    width: 7ch;
+  width: 7ch;
 }
 
 /* *************************************************
@@ -42,24 +42,24 @@ fieldset {
  * ************************************************* */
 
 details {
-    display: block;
-    margin-top: 1em;
-    margin-bottom: 1em;
+  display: block;
+  margin-top: 1em;
+  margin-bottom: 1em;
 }
 
-details > *:not(summary){
-    margin-left: 2em;
+details > *:not(summary) {
+  margin-left: 2em;
 }
 
 summary {
-    /* WARN: For Chrome, the dropdown arrow is retained. For Firefox, it's dropped */
-    display: inline-block;
-    outline: none;
-    cursor: pointer;
+  /* WARN: For Chrome, the dropdown arrow is retained. For Firefox, it's dropped */
+  display: inline-block;
+  outline: none;
+  cursor: pointer;
 }
 
 .summary {
-    border-bottom: 1px dotted;
+  border-bottom: 1px dotted;
 }
 
 /* *************************************************
@@ -67,16 +67,16 @@ summary {
  * ************************************************* */
 
 #font_examples {
-    margin-top: 10px;
+  margin-top: 10px;
 }
 
 #font_examples > tbody > tr > td:nth-child(1) {
-    text-align: right;
-    padding-right: 12px;
+  text-align: right;
+  padding-right: 12px;
 }
 
 #font_examples > tbody > tr > td:nth-child(2) {
-    font-size: 24px;
+  font-size: 24px;
 }
 
 /* *************************************************
@@ -84,8 +84,8 @@ summary {
  * ************************************************* */
 
 #theme_grid img {
-    margin-top: 10px;
-    margin-right: 10px;
+  margin-top: 10px;
+  margin-right: 10px;
 }
 
 /* *************************************************
@@ -93,37 +93,37 @@ summary {
  * ************************************************* */
 
 a.tooltip {
-    outline: none;
-    border-bottom: 1px dotted;
+  outline: none;
+  border-bottom: 1px dotted;
 }
 
 a.tooltip:hover {
-    text-decoration: none;
+  text-decoration: none;
 }
 
 a.tooltip span {
-    z-index: 10;
-    display: none;
-    padding: 14px 20px;
-    margin-top: -30px;
-    margin-left: 14px;
-    width: auto;
-    max-width: 300px;
-    line-height: 16px;
-    text-align: left;
+  z-index: 10;
+  display: none;
+  padding: 14px 20px;
+  margin-top: -30px;
+  margin-left: 14px;
+  width: auto;
+  max-width: 300px;
+  line-height: 16px;
+  text-align: left;
 }
 
 a.tooltip:hover span {
-    display: inline;
-    position: absolute;
-    color: #111;
-    border: 1px solid #DCA;
-    background:#fffAF0;
+  display: inline;
+  position: absolute;
+  color: #111;
+  border: 1px solid #dca;
+  background: #fffaf0;
 }
 
 a.tooltip span {
-    border-radius:4px;
-    box-shadow: 5px 5px 8px #CCC;
+  border-radius: 4px;
+  box-shadow: 5px 5px 8px #ccc;
 }
 
 /* *************************************************
@@ -131,66 +131,65 @@ a.tooltip span {
  * ************************************************* */
 
 #modal {
-    z-index: 1;
-    display: none;
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.75);
-    cursor: pointer;
+  z-index: 1;
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.75);
+  cursor: pointer;
 }
 
 /* Modal border */
 #modal_inner {
-    position: absolute;
-    top: 40px;
-    bottom: 40px;
-    left: 40px;
-    right: 40px;
+  position: absolute;
+  top: 40px;
+  bottom: 40px;
+  left: 40px;
+  right: 40px;
 }
 
 /* No modal border on smaller screens */
-@media only screen and (max-width: 700px){
-    #modal_inner {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-    }
+@media only screen and (max-width: 700px) {
+  #modal_inner {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
 }
 
 #img {
-    z-index: 2;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%,-50%);
-    max-width: 100%;
-    max-height: 100%;
-    cursor: auto;
+  z-index: 2;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 100%;
+  max-height: 100%;
+  cursor: auto;
 }
 
 #close {
-    z-index: 3;
-    font-family: Arial, Helvetica, sans-serif;
-    direction: rtl;
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    color: #f1f1f1;
-    font-size: 60px;
-    line-height: 35px;
-    text-shadow: 1px  1px 0 rgba(0, 0, 0, 0.9),
-                 1px -1px 0 rgba(0, 0, 0, 0.9),
-                -1px  1px 0 rgba(0, 0, 0, 0.9),
-                -1px -1px 0 rgba(0, 0, 0, 0.9);
+  z-index: 3;
+  font-family: Arial, Helvetica, sans-serif;
+  direction: rtl;
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  color: #f1f1f1;
+  font-size: 60px;
+  line-height: 35px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.9), 1px -1px 0 rgba(0, 0, 0, 0.9),
+    -1px 1px 0 rgba(0, 0, 0, 0.9), -1px -1px 0 rgba(0, 0, 0, 0.9);
 }
 
-#close:hover, #close:focus {
-    color: #bbb;
-    text-decoration: none;
-    cursor: pointer;
+#close:hover,
+#close:focus {
+  color: #bbb;
+  text-decoration: none;
+  cursor: pointer;
 }
