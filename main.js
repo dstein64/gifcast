@@ -593,13 +593,13 @@ const TermRunner = function (parent, options, cast) {
   this.oninit = function () {};
 
   // Callback for each step of term running
-  this.onstep = function (state) {};
+  this.onstep = function (_state) {};
 
   // Callback after successful term running
   this.onsuccess = function () {};
 
   // Callback after failed term running
-  this.onerror = function (message) {};
+  this.onerror = function (_message) {};
 
   const run = () => {
     let header, events;
@@ -797,13 +797,13 @@ const GifRenderer = function (parent, options, cast) {
   this.oninit = function () {};
 
   // Callback for each progress update
-  this.onprogress = function (percent) {};
+  this.onprogress = function (_percent) {};
 
   // Callback after successful GIF generated
-  this.onsuccess = function (data_url) {};
+  this.onsuccess = function (_data_url) {};
 
   // Callback after failure
-  this.onerror = function (message) {};
+  this.onerror = function (_message) {};
 
   const run = () => {
     const term_runner = new TermRunner(parent, options, cast);
@@ -872,13 +872,13 @@ const PngRenderer = function (parent, options, cast) {
   this.oninit = function () {};
 
   // Callback for each progress update
-  this.onprogress = function (percent) {};
+  this.onprogress = function (_percent) {};
 
   // Callback after successful PNG generated
-  this.onsuccess = function (data_url, width, height) {};
+  this.onsuccess = function (_data_url, _width, _height) {};
 
   // Callback after failure
-  this.onerror = function (message) {};
+  this.onerror = function (_message) {};
 
   const run = () => {
     const term_runner = new TermRunner(parent, options, cast);
@@ -1073,7 +1073,7 @@ const Cache = function () {
 const cache = new Cache();
 
 // Set callback to invalidate state when any option is changed.
-document.getElementById("options").onchange = function (e) {
+document.getElementById("options").onchange = function (_e) {
   cache.invalidate();
 };
 
@@ -1178,11 +1178,10 @@ FONT_CANDIDATES.forEach((font) => {
         const terminal = create_terminal_element();
         const cast = preview_cast(text, text.endsWith("light"));
         const png_renderer = new PngRenderer(terminal, options, cast);
-        png_renderer.onsuccess = function (data_url, width, height) {
+        png_renderer.onsuccess = function (data_url, _width, _height) {
           remove_terminal_element(terminal);
           const img = document.createElement("img");
           img.src = data_url;
-          img.style.width = (width / 2).toString();
           theme_grid.appendChild(img);
           generate_preview(idx + 1);
         };
@@ -1205,7 +1204,7 @@ document.getElementById("file_selector").onchange = function (e) {
   enable_render_button(enabled);
 };
 
-document.getElementById("render_button").onclick = function (e) {
+document.getElementById("render_button").onclick = function (_e) {
   if (cache.valid()) {
     modal.show(cache.get());
     return false;
