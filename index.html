@@ -1,218 +1,263 @@
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <title>gifcast</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta charset="UTF-8" />
-    <link rel="stylesheet" type="text/css" href="style.css" />
+    <meta
+      name="description"
+      content="Converts an asciinema cast to an animated GIF."
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/purecss@2.1.0/build/pure-min.css"
+      integrity="sha384-yHIFVG6ClnONEA5yB5DJXfW2/KC173DIQrYoZMEtBvGzmf0PKiGyNEqe9N6BNDBH"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/purecss@2.1.0/build/grids-responsive-min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="lib/xtermjs/xterm.css" />
     <script src="lib/xtermjs/xterm.js"></script>
     <script src="lib/omggif.js"></script>
   </head>
   <body>
-    <!-- Add a spacer div so text doesn't overlap with "Fork me on GitHub" -->
-    <div
-      style="width: 100px; height: 100px; float: right; display: inline-block"
-    ></div>
-    <a href="https://github.com/dstein64/gifcast">
-      <img
-        style="
-          position: absolute;
-          top: 0;
-          right: 0;
-          border: 0;
-          width: 149px;
-          height: 149px;
-        "
-        src="forkme_right_white_ffffff.png"
-        alt="Fork me on GitHub"
-      />
-    </a>
-    <h1>gifcast</h1>
-    <p>
-      Select an
-      <a href="https://github.com/asciinema/asciinema">asciinema</a> cast file,
-      configure options, then click <em>Render</em> to generate an animated GIF.
-    </p>
-    <p>
-      The animated GIF can be saved by using your browser&#8217;s
-      <em>Save Image As...</em> functionality, invoked by right-clicking the
-      image.
-    </p>
-    <details>
-      <summary><span class="summary">Details</span></summary>
-      <p>
-        Oversized images are scaled down to fit on the screen. Saving retains
-        the full resolution.
-      </p>
-      <p>
-        Browsers throttle background tabs, so be sure to keep this page in the
-        foreground during rendering to prevent a pause.
-      </p>
-    </details>
-    <details id="theme_grid_link">
-      <summary><span class="summary">Themes</span></summary>
-      <div id="theme_grid">
-        <!-- This grid is populated by core.js -->
+    <div class="header">
+      <div class="home-menu pure-menu pure-menu-horizontal pure-menu-fixed">
+        <a class="pure-menu-heading" href="">gifcast</a>
+
+        <ul class="pure-menu-list">
+          <li class="pure-menu-item">
+            <a
+              href="https://github.com/dstein64/gifcast"
+              class="pure-menu-link"
+              target="_blank"
+              >Github</a
+            >
+          </li>
+        </ul>
       </div>
-    </details>
-    <details id="font_examples_link">
-      <summary><span class="summary">Fonts</span></summary>
-      <table id="font_examples">
-        <!-- This table is populated by core.js -->
-        <tbody></tbody>
-      </table>
-    </details>
-    <form autocomplete="off">
-      <fieldset id="fieldset">
-        <table id="options">
-          <tr>
-            <td><label for="file_selector">file</label></td>
-            <td>
-              <input
-                id="file_selector"
-                type="file"
-                accept="application/x-asciicast, .cast"
-                value=""
-              />
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <a class="tooltip">
-                size
-                <span>
-                  A larger selected <em>size</em> will result in a
-                  higher-resolution GIF.
-                </span>
-              </a>
-            </td>
-            <td>
-              <select id="size">
-                <option value="10">extra small</option>
-                <option value="15">small</option>
-                <option value="20" selected="selected">medium</option>
-                <option value="25">large</option>
-                <option value="30">extra large</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td><br /></td>
-          </tr>
-          <tr>
-            <td>
-              <a class="tooltip">
-                contrast<br />gain
-                <span>Dynamically changes colors to increase contrast.</span>
-              </a>
-            </td>
-            <td>
-              <select id="contrast_gain">
-                <option value="1" selected="selected">none</option>
-                <option value="4.5">low</option>
-                <!-- Minimum for WCAG AA compliance -->
-                <option value="7">medium</option>
-                <!-- Minimum for WCAG AAA compliance -->
-                <option value="14">high</option>
-                <option value="21">full</option>
-                <!-- White on black or black on white -->
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td><label for="cursor">cursor</label></td>
-            <td>
-              <select id="cursor">
-                <option>bar</option>
-                <option selected="selected">block</option>
-                <option>none</option>
-                <option>underline</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td><label for="font">font</label></td>
-            <td>
-              <select id="font" disabled>
-                <!-- This menu is populated by core.js -->
-                <!-- The initial 'monospace' default is deleted once the fonts are loaded -->
-                <option id="initial_font">monospace</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td><label for="theme">theme</label></td>
-            <td>
-              <select id="theme">
-                <!-- This menu is populated by core.js -->
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <a class="tooltip">
-                shave
-                <span>
-                  Specifies the number of cells to remove from each
-                  corresponding edge.
-                </span>
-              </a>
-            </td>
-            <td>
-              <table>
-                <tr>
-                  <td rowspan="2">
-                    <input
-                      id="shave_left"
-                      class="shave"
-                      type="number"
-                      value="0"
-                      min="0"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      id="shave_top"
-                      class="shave"
-                      type="number"
-                      value="0"
-                      min="0"
-                    />
-                  </td>
-                  <td rowspan="2">
-                    <input
-                      id="shave_right"
-                      class="shave"
-                      type="number"
-                      value="0"
-                      min="0"
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <input
-                      id="shave_bottom"
-                      class="shave"
-                      type="number"
-                      value="0"
-                      min="0"
-                    />
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-        <br />
-        <button id="render_button" disabled>Render</button>
-      </fieldset>
-    </form>
-    <div id="loading">
-      <progress id="progress" max="100" value="0"></progress>
-      <span id="progress_text">0.0%</span>
     </div>
-    <div id="modal"></div>
+
+    <div class="splash-container">
+      <div class="splash">
+        <h1 class="splash-head">gifcast</h1>
+        <p class="splash-subhead">
+          Converts an asciinema cast to an animated GIF.
+        </p>
+      </div>
+    </div>
+
+    <div class="content-wrapper">
+      <div class="content">
+        <h2 class="content-head is-center">How To Use</h2>
+        <p>
+          Select an
+          <a href="https://github.com/asciinema/asciinema">asciinema</a> cast
+          file, configure options, then click <strong>Render</strong> to
+          generate an animated GIF. The animated GIF can be saved by using your
+          browser&#8217;s <strong>Save Image As...</strong> functionality,
+          invoked by right-clicking the image.
+        </p>
+
+        <details>
+          <summary><span class="summary">Details</span></summary>
+          <p>
+            Oversized images are scaled down to fit on the screen. Saving
+            retains the full resolution.
+          </p>
+          <p>
+            Browsers throttle background tabs, so be sure to keep this page in
+            the foreground during rendering to prevent a pause.
+          </p>
+        </details>
+
+        <details id="theme_grid_link">
+          <summary><span class="summary">Themes</span></summary>
+          <div id="theme_grid">
+            <!-- This grid is populated by core.js -->
+          </div>
+        </details>
+
+        <details id="font_examples_link">
+          <summary><span class="summary">Fonts</span></summary>
+          <table id="font_examples">
+            <!-- This table is populated by core.js -->
+            <tbody></tbody>
+          </table>
+        </details>
+        <div class="pure-g">
+          <div class="l-box-lrg pure-u-1 pure-u-md-2-5">
+            <form autocomplete="off" class="pure-form">
+              <fieldset id="fieldset">
+                <table id="options">
+                  <tr>
+                    <td><label for="file_selector">File</label></td>
+                    <td>
+                      <input
+                        id="file_selector"
+                        type="file"
+                        accept="application/x-asciicast, .cast"
+                        value=""
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <a class="tooltip">
+                        Size
+                        <span>
+                          A larger selected <em>size</em> will result in a
+                          higher-resolution GIF.
+                        </span>
+                      </a>
+                    </td>
+                    <td>
+                      <select id="size">
+                        <option value="10">extra small</option>
+                        <option value="15">small</option>
+                        <option value="20" selected="selected">medium</option>
+                        <option value="25">large</option>
+                        <option value="30">extra large</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><br /></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <a class="tooltip">
+                        Contrast <br />
+                        Gain
+                        <span
+                          >Dynamically changes colors to increase
+                          contrast.</span
+                        >
+                      </a>
+                    </td>
+                    <td>
+                      <select id="contrast_gain">
+                        <option value="1" selected="selected">none</option>
+                        <option value="4.5">low</option>
+                        <!-- Minimum for WCAG AA compliance -->
+                        <option value="7">medium</option>
+                        <!-- Minimum for WCAG AAA compliance -->
+                        <option value="14">high</option>
+                        <option value="21">full</option>
+                        <!-- White on black or black on white -->
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><label for="cursor">Cursor</label></td>
+                    <td>
+                      <select id="cursor">
+                        <option>bar</option>
+                        <option selected="selected">block</option>
+                        <option>none</option>
+                        <option>underline</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><label for="font">Font</label></td>
+                    <td>
+                      <select id="font" disabled>
+                        <!-- This menu is populated by core.js -->
+                        <!-- The initial 'monospace' default is deleted once the fonts are loaded -->
+                        <option id="initial_font">monospace</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><label for="theme">Theme</label></td>
+                    <td>
+                      <select id="theme">
+                        <!-- This menu is populated by core.js -->
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <a class="tooltip">
+                        Shave
+                        <span>
+                          Specifies the number of cells to remove from each
+                          corresponding edge.
+                        </span>
+                      </a>
+                    </td>
+                    <td>
+                      <table>
+                        <tr>
+                          <td rowspan="2">
+                            <input
+                              id="shave_left"
+                              class="shave"
+                              type="number"
+                              value="0"
+                              min="0"
+                            />
+                          </td>
+                          <td>
+                            <input
+                              id="shave_top"
+                              class="shave"
+                              type="number"
+                              value="0"
+                              min="0"
+                            />
+                          </td>
+                          <td rowspan="2">
+                            <input
+                              id="shave_right"
+                              class="shave"
+                              type="number"
+                              value="0"
+                              min="0"
+                            />
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <input
+                              id="shave_bottom"
+                              class="shave"
+                              type="number"
+                              value="0"
+                              min="0"
+                            />
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+                <br />
+                <button
+                  class="button-secondary pure-button"
+                  id="render_button"
+                  disabled
+                >
+                  Render
+                </button>
+              </fieldset>
+            </form>
+          </div>
+
+          <div class="l-box-lrg pure-u-1 pure-u-md-3-5">
+            <div id="loading">
+              <progress id="progress" max="100" value="0"></progress>
+              <span id="progress_text">0.0%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="modal"></div>
+    </div>
     <script src="main.js"></script>
   </body>
 </html>

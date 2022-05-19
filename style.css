@@ -1,45 +1,195 @@
-/* *************************************************
- * * Core
- * ************************************************* */
-
-table#options {
-  border-collapse: separate;
-  border-spacing: 3px 5px;
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
 }
 
-table#options > tbody > tr > td:nth-child(1) {
-  text-align: right;
+/*
+ * -- BASE --
+ */
+body {
+  line-height: 1.7em;
+  color: #7f8c8d;
+  font-size: 13px;
 }
 
-fieldset {
-  border: 0;
-  padding: 0;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+label {
+  color: #34495e;
 }
 
-#loading {
-  visibility: hidden;
-}
-
-#progress {
-  vertical-align: middle;
-}
-
-#progress_text {
-  vertical-align: middle;
-}
-
-#rendered {
+.pure-img-responsive {
   max-width: 100%;
   height: auto;
 }
 
-.shave {
-  width: 7ch;
+/*
+ * -- LAYOUT --
+ */
+.l-box {
+  padding: 1em;
 }
 
-/* *************************************************
- * * Details
- * ************************************************* */
+.l-box-lrg {
+  padding: 2em;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.is-center {
+  text-align: center;
+}
+
+/*
+ * -- FORM --
+ */
+.pure-form {
+  padding: 1em 1em;
+}
+
+.pure-form label {
+  margin: 1em 0 0;
+  font-weight: bold;
+  font-size: 100%;
+}
+
+.pure-form input[type] {
+  border: 2px solid #ddd;
+  box-shadow: none;
+  font-size: 100%;
+}
+
+/*
+ * -- BUTTON --
+ */
+.pure-button {
+  background-color: #1f8dd6;
+  color: white;
+  padding: 0.5em 2em;
+  border-radius: 5px;
+}
+
+.button-secondary {
+  color: white;
+  border-radius: 4px;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  background: #1f8dd6;
+}
+
+/*
+ * -- MENU --
+ */
+
+.home-menu {
+  padding: 0.5em;
+  text-align: center;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.home-menu {
+  background: #2d3e50;
+}
+
+.pure-menu.pure-menu-fixed {
+  border-bottom: none;
+  z-index: 4;
+}
+
+.home-menu .pure-menu-heading {
+  color: white;
+  font-weight: 400;
+  font-size: 120%;
+}
+
+.home-menu .pure-menu-selected a {
+  color: white;
+}
+
+.home-menu a {
+  color: #6fbef3;
+}
+
+.home-menu li a:hover,
+.home-menu li a:focus {
+  background: none;
+  border: none;
+  color: #aecfe5;
+}
+
+/*
+ * -- SPLASH --
+ */
+
+.splash-container {
+  background: #1f8dd6;
+  z-index: 1;
+  overflow: hidden;
+  width: 100%;
+  height: 88%;
+  top: 0;
+  left: 0;
+  position: fixed !important;
+}
+
+.splash {
+  width: 80%;
+  height: 50%;
+  margin: auto;
+  position: absolute;
+  top: 100px;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  text-align: center;
+}
+
+.splash-head {
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  border: 3px solid white;
+  padding: 1em 1.6em;
+  font-weight: 100;
+  border-radius: 5px;
+  line-height: 1em;
+}
+
+.splash-subhead {
+  color: white;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+}
+
+/*
+ * -- CONTENT --
+ */
+.content-wrapper {
+  position: absolute;
+  top: 87%;
+  width: 100%;
+  min-height: 12%;
+  z-index: 2;
+  background: white;
+}
+
+.content {
+  padding: 1em 1em 3em;
+}
+
+.content-head {
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 2em 0 1em;
+}
+
+/*
+ * -- DETAILS --
+ */
 
 details {
   display: block;
@@ -52,8 +202,6 @@ details > *:not(summary) {
 }
 
 summary {
-  /* WARN: For Chrome, the dropdown arrow is retained. For Firefox, it's dropped */
-  display: inline-block;
   outline: none;
   cursor: pointer;
 }
@@ -62,9 +210,9 @@ summary {
   border-bottom: 1px dotted;
 }
 
-/* *************************************************
- * * Font Examples
- * ************************************************* */
+/*
+ * -- FONT EXAMPLES --
+ */
 
 #font_examples {
   margin-top: 10px;
@@ -79,21 +227,23 @@ summary {
   font-size: 24px;
 }
 
-/* *************************************************
- * * Theme Grid
- * ************************************************* */
+/*
+ * -- THEME EXAMPLES --
+ */
 
 #theme_grid img {
+  width: 284px;
   margin-top: 10px;
   margin-right: 10px;
 }
 
-/* *************************************************
- * * Tooltips
- * ************************************************* */
+/*
+ * -- TOOLTIP --
+ */
 
 a.tooltip {
   outline: none;
+  color: #34495e;
   border-bottom: 1px dotted;
 }
 
@@ -117,18 +267,18 @@ a.tooltip:hover span {
   display: inline;
   position: absolute;
   color: #111;
-  border: 1px solid #dca;
-  background: #fffaf0;
+  border: 1px solid #b4d5f8;
+  background: #deebf9;
 }
 
 a.tooltip span {
-  border-radius: 4px;
+  border-radius: 10px;
   box-shadow: 5px 5px 8px #ccc;
 }
 
-/* *************************************************
- * * Modal Box
- * ************************************************* */
+/*
+ * -- MODAL --
+ */
 
 #modal {
   z-index: 1;
@@ -142,24 +292,12 @@ a.tooltip span {
   cursor: pointer;
 }
 
-/* Modal border */
 #modal_inner {
   position: absolute;
-  top: 40px;
-  bottom: 40px;
-  left: 40px;
-  right: 40px;
-}
-
-/* No modal border on smaller screens */
-@media only screen and (max-width: 700px) {
-  #modal_inner {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-  }
+  top: 75px;
+  bottom: 75px;
+  left: 75px;
+  right: 75px;
 }
 
 #img {
@@ -192,4 +330,94 @@ a.tooltip span {
   color: #bbb;
   text-decoration: none;
   cursor: pointer;
+}
+
+/*
+ * -- OTHER --
+ */
+
+table#options {
+  border-collapse: separate;
+  border-spacing: 3px 5px;
+}
+
+fieldset {
+  border: 0;
+  padding: 0;
+}
+
+#loading {
+  visibility: hidden;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  position: relative;
+  text-align: center;
+}
+
+#progress {
+  vertical-align: middle;
+}
+
+#progress_text {
+  vertical-align: middle;
+}
+
+#rendered {
+  max-width: 100%;
+  height: auto;
+}
+
+.shave {
+  width: 10ch;
+}
+
+/*
+ * -- TABLET (AND UP) MEDIA QUERIES --
+ */
+@media only screen and (max-width: 700px) {
+  /* No modal border on smaller screens */
+  #modal_inner {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+}
+
+@media (min-width: 48em) {
+  body {
+    font-size: 16px;
+  }
+
+  .home-menu {
+    text-align: left;
+  }
+
+  .home-menu ul {
+    float: right;
+  }
+
+  .splash {
+    width: 50%;
+    height: 50%;
+  }
+
+  .splash-head {
+    font-size: 250%;
+  }
+
+  .l-box-lrg {
+    border: none;
+  }
+}
+
+/*
+ * -- DESKTOP (AND UP) MEDIA QUERIES --
+ */
+@media (min-width: 78em) {
+  .splash-head {
+    font-size: 300%;
+  }
 }
