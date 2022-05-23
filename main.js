@@ -667,14 +667,14 @@ const GifRenderer = function(parent, options, cast) {
                 // Set 'loop' to 0 to continuously loop. Set 'loop' to
                 // undefined to not loop. Set 'loop' to N to loop N times.
                 let gopts_loop;
-                if (options.loops === 0)
-                    gopts_loop = options.loops
-                else if (options.loops === 1)
+                if (options.play_count === 0)
+                    gopts_loop = options.play_count
+                else if (options.play_count === 1)
                     gopts_loop = undefined;
-                else if (options.loops > 1)
-                    gopts_loop = options.loops - 1;
+                else if (options.play_count > 1)
+                    gopts_loop = options.play_count - 1;
                 else
-                    throw Error('Invalid loops.');
+                    throw Error('Invalid play count.');
                 const gopts = {palette: palette, loop: gopts_loop};
                 gif = new GifWriter(bytes, width, height, gopts);
             }
@@ -778,11 +778,11 @@ const get_options = function() {
     for (const pos of ['top', 'left', 'bottom', 'right']) {
         shave[pos] = Number.parseInt(document.getElementById('shave_' + pos).value);
     }
-    const loops = Number.parseInt(document.getElementById('loops').value);
+    const play_count = Number.parseInt(document.getElementById('play_count').value);
     const options = {
         size: size,
         font: font,
-        loops: loops,
+        play_count: play_count,
         contrast_gain: contrast_gain,
         theme: theme,
         cursor: cursor,
@@ -1064,8 +1064,8 @@ document.getElementById('render_button').onclick = function(e) {
         element.value = x.toString();
     }
 
-    // Ensure that loops option is valid.
-    valNonNegInt(document.getElementById('loops'));
+    // Ensure that play_count option is valid.
+    valNonNegInt(document.getElementById('play_count'));
     // Ensure that shave inputs are valid.
     for (const pos of ['top', 'left', 'bottom', 'right']) {
         valNonNegInt(document.getElementById('shave_' + pos));
