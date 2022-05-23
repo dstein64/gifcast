@@ -666,7 +666,16 @@ const GifRenderer = function(parent, options, cast) {
             if (gif === null) {
                 // Set 'loop' to 0 to continuously loop. Set 'loop' to
                 // undefined to not loop. Set 'loop' to N to loop N times.
-                const gopts = {palette: palette, loop: options.loop};
+                let gopts_loop;
+                if (options.loops === 0)
+                    gopts_loop = options.loops
+                else if (options.loops === 1)
+                    gopts_loop = undefined;
+                else if (options.loops > 1)
+                    gopts_loop = options.loops - 1;
+                else
+                    throw Error('Invalid loops.');
+                const gopts = {palette: palette, loop: gopts_loop};
                 gif = new GifWriter(bytes, width, height, gopts);
             }
             // omggif expects centi-seconds
@@ -769,6 +778,7 @@ const get_options = function() {
     for (const pos of ['top', 'left', 'bottom', 'right']) {
         shave[pos] = Number.parseInt(document.getElementById('shave_' + pos).value);
     }
+    const loops = Number.parseInt(document.getElementById('loops').value);
     const options = {
         size: size,
         font: font,
@@ -776,6 +786,7 @@ const get_options = function() {
         theme: theme,
         cursor: cursor,
         shave: shave,
+        loops: loops,
     };
     return options;
 };
@@ -1035,19 +1046,29 @@ document.getElementById('render_button').onclick = function(e) {
         return false;
     }
 
-    // Ensure that shave inputs are valid.
-    for (const pos of ['top', 'left', 'bottom', 'right']) {
-        const input = document.getElementById('shave_' + pos);
-        const parsed = Number.parseFloat(input.value);
+    const valNonNegInt = function(element) {
+        let x = Number.parseFloat(element.value);
         // Convert to integer.
-        if (Number.isFinite(parsed) && !Number.isInteger(parsed)) {
-            input.value = Math.round(parsed).toString();
+        if (Number.isFinite(x) && !Number.isInteger(x)) {
+            x = Math.round(x);
         }
         // Convert empty or invalid to 0.
-        if (!Number.isFinite(parsed)) {
-            input.value = '0';
+        if (!Number.isFinite(x)) {
+            x = 0;
         }
+        // Convert negative to 0.
+        if (x < 0) {
+            x = 0;
+        }
+        element.value = x.toString();
     }
+
+    // Ensure that shave inputs are valid.
+    for (const pos of ['top', 'left', 'bottom', 'right']) {
+        valNonNegInt(document.getElementById('shave_' + pos));
+    }
+    // Ensure that loops option is valid.
+    valNonNegInt(document.getElementById('loops'));
     const file_selector = document.getElementById('file_selector');
     const files = file_selector.files;
     if (!FileReader || !files || !files.length) {
