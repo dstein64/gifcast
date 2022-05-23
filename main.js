@@ -1046,6 +1046,7 @@ document.getElementById('render_button').onclick = function(e) {
         return false;
     }
 
+    // Ensure an input element has a non-negative integer.
     const valNonNegInt = function(element) {
         let x = Number.parseFloat(element.value);
         // Convert to integer.
