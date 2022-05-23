@@ -666,7 +666,7 @@ const GifRenderer = function(parent, options, cast) {
             if (gif === null) {
                 // Set 'loop' to 0 to continuously loop. Set 'loop' to
                 // undefined to not loop. Set 'loop' to N to loop N times.
-                const gopts = {palette: palette, loop: 0};
+                const gopts = {palette: palette, loop: options.loop};
                 gif = new GifWriter(bytes, width, height, gopts);
             }
             // omggif expects centi-seconds
