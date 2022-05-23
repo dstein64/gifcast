@@ -782,11 +782,11 @@ const get_options = function() {
     const options = {
         size: size,
         font: font,
+        loops: loops,
         contrast_gain: contrast_gain,
         theme: theme,
         cursor: cursor,
         shave: shave,
-        loops: loops,
     };
     return options;
 };
@@ -1064,12 +1064,12 @@ document.getElementById('render_button').onclick = function(e) {
         element.value = x.toString();
     }
 
+    // Ensure that loops option is valid.
+    valNonNegInt(document.getElementById('loops'));
     // Ensure that shave inputs are valid.
     for (const pos of ['top', 'left', 'bottom', 'right']) {
         valNonNegInt(document.getElementById('shave_' + pos));
     }
-    // Ensure that loops option is valid.
-    valNonNegInt(document.getElementById('loops'));
     const file_selector = document.getElementById('file_selector');
     const files = file_selector.files;
     if (!FileReader || !files || !files.length) {
