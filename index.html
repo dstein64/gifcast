@@ -84,19 +84,6 @@
                 <tr>
                     <td>
                         <a class="tooltip">
-                            play<br>count
-                            <span>
-                                The number of times to play the recording (<em>empty</em> loops infinitely).
-                            </span>
-                        </a>
-                    </td>
-                    <td>
-                        <input id="play_count" type="number" min="1">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <a class="tooltip">
                             contrast<br>gain
                             <span>Dynamically changes colors to increase contrast.</span>
                         </a>
@@ -133,11 +120,16 @@
                     </td>
                 </tr>
                 <tr>
-                    <td><label for="theme">theme</label></td>
                     <td>
-                        <select id="theme">
-                            <!-- This menu is populated by core.js -->
-                        </select>
+                        <a class="tooltip">
+                            play<br>count
+                            <span>
+                                The number of times to play the recording (<em>empty</em> loops infinitely).
+                            </span>
+                        </a>
+                    </td>
+                    <td>
+                        <input id="play_count" type="number" min="1">
                     </td>
                 </tr>
                 <tr>
@@ -166,6 +158,14 @@
                                 </td>
                             </tr>
                         </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label for="theme">theme</label></td>
+                    <td>
+                        <select id="theme">
+                            <!-- This menu is populated by core.js -->
+                        </select>
                     </td>
                 </tr>
             </table>

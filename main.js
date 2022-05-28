@@ -767,27 +767,27 @@ const remove_terminal_element = function(terminal) {
 
 const get_options = function() {
     const size = Number.parseInt(document.getElementById('size').value);
+    const contrast_gain = Number.parseInt(
+        document.getElementById('contrast_gain').value);
+    const cursor = document.getElementById('cursor').value;
     let font = document.getElementById('font').value;
     if (!font) {
         font = 'monospace';
     }
-    const contrast_gain = Number.parseInt(
-        document.getElementById('contrast_gain').value);
-    const theme = document.getElementById('theme').value;
-    const cursor = document.getElementById('cursor').value;
+    const play_count = Number.parseInt(document.getElementById('play_count').value);
     const shave = {};
     for (const pos of ['top', 'left', 'bottom', 'right']) {
         shave[pos] = Number.parseInt(document.getElementById('shave_' + pos).value);
     }
-    const play_count = Number.parseInt(document.getElementById('play_count').value);
+    const theme = document.getElementById('theme').value;
     const options = {
         size: size,
+        contrast_gain: contrast_gain,
+        cursor: cursor,
         font: font,
         play_count: play_count,
-        contrast_gain: contrast_gain,
-        theme: theme,
-        cursor: cursor,
         shave: shave,
+        theme: theme,
     };
     return options;
 };
