@@ -586,6 +586,7 @@ const TermRunner = function(parent, options, cast) {
 
         term.onRender(process);
         term.open(parent);
+        term.loadAddon(new CanvasAddon.CanvasAddon());
         // Monkey patch the xterm.js renderer (see CursorRenderLayer.ts) so that calls to
         // _renderBlurCursor become calls to _renderBlockCursor. This prevents an unfocused
         // cursor.
