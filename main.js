@@ -919,7 +919,7 @@ FONT_CANDIDATES.forEach((font) => {
     const font_dropdown = document.getElementById('font');
     const font_examples = document.getElementById('font_examples');
     const num_candidates = FONT_CANDIDATES.length;
-    // Checking for font availability can be slow. Use an asyncronous callback
+    // Checking for font availability can be slow. Use an asynchronous callback
     // for each font so that the UI is not blocked. The ordering is maintained
     // since Javascript event loop events are processed in FIFO order.
     setTimeout(() => {
