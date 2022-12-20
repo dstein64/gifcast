@@ -497,6 +497,7 @@ const TermRunner = function(parent, options, cast) {
         if (['bar', 'block', 'underline'].includes(options.cursor))
             config.cursorStyle = options.cursor;
         const term = new Terminal(config);
+        term.loadAddon(new CanvasAddon.CanvasAddon());
 
         // 'idx' is the index of the frame being processed. Frames are written to
         // the terminal at the end of process(), except for the initial frame, which
@@ -586,7 +587,6 @@ const TermRunner = function(parent, options, cast) {
 
         term.onRender(process);
         term.open(parent);
-        term.loadAddon(new CanvasAddon.CanvasAddon());
         // Monkey patch the xterm.js renderer (see CursorRenderLayer.ts) so that calls to
         // _renderBlurCursor become calls to _renderBlockCursor. This prevents an unfocused
         // cursor.
