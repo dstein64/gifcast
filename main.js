@@ -680,8 +680,15 @@ const GifRenderer = function(parent, options, cast) {
                 const gopts = {palette: palette, loop: gopts_loop};
                 gif = new GifWriter(bytes, width, height, gopts);
             }
-            // omggif expects centi-seconds
-            const gif_delay = delay * 100;
+            let gif_delay = delay * 100;  // convert seconds to milliseconds
+            if (Number.isFinite(options.idle_limit_min)) {
+                // convert milliseconds to centiseconds
+                gif_delay = Math.max(gif_delay, options.idle_limit_min / 10);
+            }
+            if (Number.isFinite(options.idle_limit_max)) {
+                // convert milliseconds to centiseconds
+                gif_delay = Math.min(gif_delay, options.idle_limit_max / 10);
+            }
             const opts = {delay: gif_delay};
             gif.addFrame(0, 0, width, height, indexed_pixels, opts);
             const percent = 100.0 * (state.idx + 1) / state.num_frames;
@@ -775,6 +782,8 @@ const get_options = function() {
     if (!font) {
         font = 'monospace';
     }
+    const idle_limit_min = Number.parseInt(document.getElementById('idle_limit_min').value);
+    const idle_limit_max = Number.parseInt(document.getElementById('idle_limit_max').value);
     const play_count = Number.parseInt(document.getElementById('play_count').value);
     const shave = {};
     for (const pos of ['top', 'left', 'bottom', 'right']) {
@@ -786,6 +795,8 @@ const get_options = function() {
         contrast_gain: contrast_gain,
         cursor: cursor,
         font: font,
+        idle_limit_min: idle_limit_min,
+        idle_limit_max: idle_limit_max,
         play_count: play_count,
         shave: shave,
         theme: theme,
@@ -1066,6 +1077,15 @@ document.getElementById('render_button').onclick = function(e) {
         element.value = x.toString();
     }
 
+    // Ensure that idle limits are valid.
+    validateInt(document.getElementById('idle_limit_min'), 0, '');
+    validateInt(document.getElementById('idle_limit_max'), 0, '');
+    const min = document.getElementById('idle_limit_min').value;
+    const max = document.getElementById('idle_limit_max').value;
+    if (min !== '' && max !== '') {
+        // Make sure that min is not greater than max.
+        document.getElementById('idle_limit_min').value = Math.min(min, max);
+    }
     // Ensure that play_count option is valid.
     validateInt(document.getElementById('play_count'), 1, '');
     // Ensure that shave inputs are valid.
