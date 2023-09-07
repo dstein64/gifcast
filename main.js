@@ -578,7 +578,8 @@ const TermRunner = function(parent, options, cast) {
             if (idx >= frames.length - 1) {
                 this.onsuccess();
                 setTimeout(function() {
-                    term.dispose();
+                    // TODO: Switch this back to term.dispose() when xtermjs #4757 resolved.
+                    parent.innerHTML = '';
                 });
                 return;
             }
