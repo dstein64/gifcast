@@ -489,7 +489,6 @@ const TermRunner = function(parent, options, cast) {
             allowTransparency: false,
             theme: theme,
             fontSize: font_size,
-            rendererType: 'canvas',
             minimumContrastRatio: options.contrast_gain,
             fontFamily: options.font + ', monospace',
         };
