@@ -489,13 +489,14 @@ const TermRunner = function(parent, options, cast) {
             allowTransparency: false,
             theme: theme,
             fontSize: font_size,
-            rendererType: 'canvas',
             minimumContrastRatio: options.contrast_gain,
             fontFamily: options.font + ', monospace',
         };
         // Cursor can possibly be 'none', which is not a valid setting for xtermjs.
-        if (['bar', 'block', 'underline'].includes(options.cursor))
+        if (['bar', 'block', 'underline'].includes(options.cursor)) {
             config.cursorStyle = options.cursor;
+            config.cursorInactiveStyle = options.cursor;
+        }
         const term = new Terminal(config);
         term.loadAddon(new CanvasAddon.CanvasAddon());
 
@@ -577,7 +578,8 @@ const TermRunner = function(parent, options, cast) {
             if (idx >= frames.length - 1) {
                 this.onsuccess();
                 setTimeout(function() {
-                    term.dispose();
+                    // TODO: Switch this back to term.dispose() when xtermjs #4757 resolved.
+                    parent.innerHTML = '';
                 });
                 return;
             }
@@ -587,19 +589,6 @@ const TermRunner = function(parent, options, cast) {
 
         term.onRender(process);
         term.open(parent);
-        // Monkey patch the xterm.js renderer (see CursorRenderLayer.ts) so that calls to
-        // _renderBlurCursor become calls to _renderBlockCursor. This prevents an unfocused
-        // cursor.
-        const cursor_render_layer = term._core._renderService._renderer._renderLayers[3];
-        const patchable = cursor_render_layer._canvas.className === 'xterm-cursor-layer'
-            && '_renderBlurCursor' in cursor_render_layer
-            && '_renderBlockCursor' in cursor_render_layer;
-        if (!patchable) {
-            term.dispose();
-            this.onerror('Unsupported version of xterm.js.');
-            return;
-        }
-        cursor_render_layer._renderBlurCursor = cursor_render_layer._renderBlockCursor;
         // Set <textarea readonly> so that a screen keyboard doesn't pop-up on mobile devices.
         const textareas = parent.getElementsByTagName('textarea');
         for (let i = 0; i < textareas.length; ++i) {
