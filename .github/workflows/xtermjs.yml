@@ -14,13 +14,15 @@ jobs:
       - name: Zip
         run: |
           npm install xterm xterm-addon-canvas
-          zip --junk-paths xtermjs.zip \
+          mkdir xtermjs
+          cp \
             node_modules/xterm/lib/xterm.js \
             node_modules/xterm/css/xterm.css \
-            node_modules/xterm-addon-canvas/lib/xterm-addon-canvas.js
+            node_modules/xterm-addon-canvas/lib/xterm-addon-canvas.js \
+            xtermjs
 
       - name: Upload
         uses: actions/upload-artifact@v3
         with:
           name: xtermjs
-          path: xtermjs.zip
+          path: xtermjs
