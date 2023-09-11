@@ -1,0 +1,26 @@
+name: xtermjs
+# When the 'permissions' key is specified, unspecified permission scopes (e.g.,
+# actions, checks, etc.) are set to no access (none).
+permissions:
+  contents: read
+on:
+  workflow_dispatch:
+
+jobs:
+  xtermjs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Zip
+        run: |
+          npm install xterm xterm-addon-canvas
+          zip --junk-paths xtermjs.zip \
+            node_modules/xterm/lib/xterm.js \
+            node_modules/xterm/css/xterm.css \
+            node_modules/xterm-addon-canvas/lib/xterm-addon-canvas.js
+
+      - name: Upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: packages
+          path: ./dist
