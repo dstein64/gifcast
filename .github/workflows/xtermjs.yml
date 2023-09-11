@@ -22,5 +22,4 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v3
         with:
-          name: xtermjs
           path: xtermjs.zip
