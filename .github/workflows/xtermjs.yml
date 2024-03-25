@@ -16,9 +16,9 @@ jobs:
           npm install @xterm/xterm @xterm/addon-canvas
           mkdir xtermjs
           cp \
-            node_modules/xterm/lib/xterm.js \
-            node_modules/xterm/css/xterm.css \
-            node_modules/xterm-addon-canvas/lib/xterm-addon-canvas.js \
+            node_modules/@xterm/xterm/lib/xterm.js \
+            node_modules/@xterm/xterm/css/xterm.css \
+            node_modules/@xterm/addon-canvas/lib/addon-canvas.js \
             xtermjs
 
       - name: Upload
