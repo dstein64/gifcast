@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Zip
         run: |
-          npm install xterm xterm-addon-canvas
+          npm install @xterm/xterm @xterm/addon-canvas
           mkdir xtermjs
           cp \
             node_modules/xterm/lib/xterm.js \
