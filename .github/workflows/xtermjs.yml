@@ -13,12 +13,12 @@ jobs:
     steps:
       - name: Zip
         run: |
-          npm install @xterm/xterm @xterm/addon-canvas
+          npm install @xterm/xterm @xterm/addon-webgl
           mkdir xtermjs
           cp \
             node_modules/@xterm/xterm/lib/xterm.js \
             node_modules/@xterm/xterm/css/xterm.css \
-            node_modules/@xterm/addon-canvas/lib/addon-canvas.js \
+            node_modules/@xterm/addon-webgl/lib/addon-webgl.js \
             xtermjs
 
       - name: Upload
