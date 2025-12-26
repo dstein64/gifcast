@@ -404,10 +404,17 @@ const merge_frames = function(frames) {
     return merged;
 };
 
+// asciicast file format (version 2) is specified at:
+//   https://docs.asciinema.org/manual/asciicast/v2/
+// asciicast file format (version 3) is specified at:
+//   https://docs.asciinema.org/manual/asciicast/v3/
+
 // Parse a cast file. Return an object with a header and a list of events.
 // Includes error-checking.
 const parse_cast = function(cast) {
-    const lines = cast.split(/\r?\n/);
+    const lines = cast
+        .split(/\r?\n/)
+        .filter(line => !line.trim().startsWith('#'));  // asciinema cast version 3 supports line comments
     if (lines.length === 0) throw Error('Invalid file.');
     let header = null;
     try {
@@ -415,7 +422,8 @@ const parse_cast = function(cast) {
     } catch(e) {
         throw Error('Error parsing JSON.');
     }
-    if (header.version !== 2) throw Error('gifcast only supports asciinema cast version 2.');
+    if (![2, 3].includes(header.version))
+        throw Error('gifcast only supports asciinema cast versions 2 and 3.');
     const events = [];
     for (let i = 1; i < lines.length; ++i) {
         const line = lines[i];
@@ -426,12 +434,21 @@ const parse_cast = function(cast) {
             throw Error('Error parsing JSON.');
         }
     }
+    if (header.version === 3) {
+        const term = header.term;
+        delete header.term;
+        header.width = term.cols;
+        header.height = term.rows;
+        if ('theme' in term) {
+            header.term = term.theme;
+        }
+        for (let i = 1; i < events.length; ++i) {
+            events[i][0] += events[i - 1][0];
+        }
+    }
     const output = {header: header, events: events};
     return output;
 };
-
-// asciicast file format (version 2) is specified at:
-//   https://github.com/asciinema/asciinema/blob/develop/doc/asciicast-v2.md
 
 const TermRunner = function(parent, options, cast) {
     // Callback before term running
