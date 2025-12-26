@@ -72,6 +72,16 @@ const has_font = function() {
     return closure;
 }();
 
+const supports_webgl = function() {
+    try {
+        const canvas = document.createElement('canvas');
+        if (!window.WebGLRenderingContext) return false;
+        return canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    } catch(e) {
+        return false;
+    }
+};
+
 // *************************************************
 // * Core
 // *************************************************
@@ -509,37 +519,37 @@ const TermRunner = function(parent, options, cast) {
             minimumContrastRatio: options.contrast_gain,
             fontFamily: options.font + ', monospace',
         };
-        // Cursor can possibly be 'none', which is not a valid setting for xtermjs.
-        if (['bar', 'block', 'underline'].includes(options.cursor)) {
-            config.cursorStyle = options.cursor;
-            config.cursorInactiveStyle = options.cursor;
-        }
+        config.cursorStyle = options.cursor;
+        config.cursorInactiveStyle = options.cursor;
         const term = new Terminal(config);
-        term.loadAddon(new CanvasAddon.CanvasAddon());
+        const webgl_addon = new WebglAddon.WebglAddon();
+        let webgl_context_lost = false;
+        webgl_addon.onContextLoss(() => {
+            webgl_context_lost = true;
+        });
+        term.loadAddon(webgl_addon);
 
         // 'idx' is the index of the frame being processed. Frames are written to
         // the terminal at the end of process(), except for the initial frame, which
         // is written at the beginning to start the process.
         let idx = 0;
         const process = () => {
+            if (webgl_context_lost) {
+                this.onerror('WebGL context lost.');
+                return;
+            }
             // Don't process if there is more buffered data to write.
             if (term._core._writeBuffer._writeBuffer.length > 0) {
                 term.write('');  // trigger another rendering
                 return;
             }
-            const text_canvas = parent.getElementsByClassName('xterm-text-layer')[0];
-            const cursor_canvas = parent.getElementsByClassName('xterm-cursor-layer')[0];
-            if (text_canvas.height !== cursor_canvas.height
-                    || text_canvas.width !== cursor_canvas.width) {
-                // The code assumes that the text canvas and cursor canvas are the same size.
-                this.onerror('Canvas size mismatch.');
-                return;
-            }
+            // The first canvas is the xterm-link-layer. The second canvas has the terminal.
+            const webgl_canvas = parent.getElementsByTagName('canvas')[1];
 
             const padding = Math.ceil(PADDING_FACTOR * options.size);
 
-            const px_per_row = text_canvas.height / rows;
-            const px_per_col = text_canvas.width / cols;
+            const px_per_row = webgl_canvas.height / rows;
+            const px_per_col = webgl_canvas.width / cols;
 
             const shaved_rows = rows - options.shave.top - options.shave.bottom;
             if (shaved_rows <= 0) {
@@ -574,15 +584,9 @@ const TermRunner = function(parent, options, cast) {
             const source_x = options.shave.left * px_per_col;
             const source_y = options.shave.top * px_per_row;
             context.drawImage(
-                text_canvas,
+                webgl_canvas,
                 source_x, source_y, width, height,
                 padding, padding, width, height);
-            if (options.cursor !== 'none') {
-                context.drawImage(
-                    cursor_canvas,
-                    source_x, source_y, width, height,
-                    padding, padding, width, height);
-            }
             const state = {
                 idx: idx,
                 delay: frames[idx].delay,
@@ -1143,3 +1147,7 @@ window.addEventListener('pageshow', (e) => {
     if (e.persisted)
         window.location.reload();
 });
+
+if (!supports_webgl()) {
+    document.body.textContent = 'Your browser doesn\'t support WebGL, which is required for gifcast.';
+}
