@@ -348,8 +348,8 @@ const quantize = function(pixels, palette) {
     return indexed_pixels;
 };
 
-const header_palette_theme = function(header_palette) {
-    let colors = header_palette.split(':');
+const cast_palette_theme = function(cast_palette) {
+    let colors = cast_palette.split(':');
     if (colors.length === 8)
         colors = colors.concat(colors);
     const theme = {
@@ -377,8 +377,7 @@ const header_palette_theme = function(header_palette) {
 const extract_frames = function(events) {
     const frames = [{time: 0.0, data: ''}];
     for (let i = 0; i < events.length; ++i) {
-        const [time, type, data] = events[i];
-        if (type !== 'o') continue;
+        const [time, data] = events[i];
         frames.push({
             time: time,
             data: data,
@@ -414,49 +413,95 @@ const merge_frames = function(frames) {
     return merged;
 };
 
-// asciicast file format (version 2) is specified at:
+// asciicast file formats are specified at:
+//   https://docs.asciinema.org/manual/asciicast/v1/
 //   https://docs.asciinema.org/manual/asciicast/v2/
-// asciicast file format (version 3) is specified at:
 //   https://docs.asciinema.org/manual/asciicast/v3/
 
-// Parse a cast file. Return an object with a header and a list of events.
-// Includes error-checking.
-const parse_cast = function(cast) {
-    const lines = cast
-        .split(/\r?\n/)
-        .filter(line => !line.trim().startsWith('#'));  // asciinema cast version 3 supports line comments
+const get_cast_version = function(cast) {
+    const lines = cast.split(/\r?\n/);
     if (lines.length === 0) throw Error('Invalid file.');
-    let header = null;
     try {
-        header = JSON.parse(lines[0]);  // throws a SyntaxError
-    } catch(e) {
-        throw Error('Error parsing JSON.');
-    }
-    if (![2, 3].includes(header.version))
-        throw Error('gifcast only supports asciinema cast versions 2 and 3.');
-    const events = [];
-    for (let i = 1; i < lines.length; ++i) {
-        const line = lines[i];
-        if (!line) continue;
+        const header = JSON.parse(lines[0]);
+        return header.version;
+    } catch(e1) {
         try {
-            events.push(JSON.parse(line));
-        } catch(e) {
+            return JSON.parse(cast).version;
+        } catch(e2) {
             throw Error('Error parsing JSON.');
         }
     }
-    if (header.version === 3) {
-        const term = header.term;
-        delete header.term;
-        header.width = term.cols;
-        header.height = term.rows;
-        if ('theme' in term) {
-            header.term = term.theme;
+}
+
+// Parse a cast file. Return an object with a width, height, theme, and a list of events.
+const parse_cast = function(cast) {
+    const version = get_cast_version(cast);
+    let width = -1;
+    let height = -1;
+    let theme = null;
+    const events = [];
+    if (version === 1) {
+        const object = JSON.parse(cast);
+        width = object.width;
+        height = object.height;
+        const stdout = object.stdout;
+        for (let i = 0; i < stdout.length; ++i) {
+            const entry = stdout[i];
+            events.push([entry[0], entry[1]]);
         }
         for (let i = 1; i < events.length; ++i) {
             events[i][0] += events[i - 1][0];
         }
+        if ('duration' in object) {
+            events.push([object.duration, '']);  // so the final frame lasts its intended duration
+        }
+    } else if (version === 2) {
+        const lines = cast.split(/\r?\n/);
+        const header = JSON.parse(lines[0]);
+        width = header.width;
+        height = header.height;
+        if ('theme' in header) {
+            theme = header.theme;
+        }
+        for (let i = 1; i < lines.length; ++i) {
+            const line = lines[i];
+            if (!line) continue;
+            const item = JSON.parse(line);
+            if (item[1] === 'o') {
+                events.push([item[0], item[2]]);
+            }
+        }
+        if ('duration' in header) {
+            events.push([header.duration, '']);  // so the final frame lasts its intended duration
+        }
+    } else if (version === 3) {
+        const lines = cast
+            .split(/\r?\n/)
+            .filter(line => !line.trim().startsWith('#'));
+        const header = JSON.parse(lines[0]);
+        const term = header.term;
+        width = term.cols;
+        height = term.rows;
+        if ('theme' in term) {
+            theme = term.theme;
+        }
+        for (let i = 1; i < lines.length; ++i) {
+            const line = lines[i];
+            if (!line) continue;
+            const item = JSON.parse(line);
+            if (item[1] === 'o') {
+                events.push([item[0], item[2]]);
+            } else if (item[1] === 'x') {
+                events.push([item[0], '']);  // so the final frame lasts its intended duration
+            }
+        }
+        for (let i = 1; i < events.length; ++i) {
+            events[i][0] += events[i - 1][0];
+        }
+    } else {
+        throw Error(`Unsupported asciinema cast version: ${version}`);
     }
-    const output = {header: header, events: events};
+    const output = {width: width, height: height, theme: theme, events: events};
     return output;
 };
 
@@ -474,9 +519,9 @@ const TermRunner = function(parent, options, cast) {
     this.onerror = function(message) {};
 
     const run = () => {
-        let header, events;
+        let width, height, cast_theme, events;
         try {
-            ({header, events} = parse_cast(cast));
+            ({width, height, theme: cast_theme, events} = parse_cast(cast));
         } catch(e) {
             this.onerror(e.message);
             return;
@@ -493,22 +538,21 @@ const TermRunner = function(parent, options, cast) {
 
         const theme = JSON.parse(JSON.stringify(THEMES[options.theme] || {}));
 
-        if (options.theme === 'none' && 'theme' in header) {
+        if (options.theme === 'none' && cast_theme !== null) {
             // It appears that there is no way to set cursor, cursorAccent, and selection
             // in the asciicast file format (version 2).
-            const header_theme = header.theme;
-            if ('fg' in header_theme) theme.foreground = header_theme.fg;
-            if ('bg' in header_theme) theme.background = header_theme.bg;
-            if ('palette' in header_theme)
-                Object.assign(theme, header_palette_theme(header_theme.palette));
+            if ('fg' in cast_theme) theme.foreground = cast_theme.fg;
+            if ('bg' in cast_theme) theme.background = cast_theme.bg;
+            if ('palette' in cast_theme)
+                Object.assign(theme, cast_palette_theme(cast_theme.palette));
         }
 
         // xtermjs scales the canvas depending on devicePixelRatio. Adjust for this so
         // that the generated GIF size is independent of devicePixelRatio.
         const font_size = options.size / window.devicePixelRatio;  // non-integer values seems to work
 
-        const cols = header.width;
-        const rows = header.height;
+        const cols = width;
+        const rows = height;
         const config = {
             cols: cols,
             rows: rows,
