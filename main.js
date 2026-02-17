@@ -536,7 +536,10 @@ const TermRunner = function(parent, options, cast) {
         // for processing. Iteration starts with the initial onRender
         // that is called when the terminal is opened.
 
-        const theme = JSON.parse(JSON.stringify(THEMES[options.theme] || {}));
+        let theme = typeof options.theme === 'object'
+            ? options.theme
+            : (THEMES[options.theme] || {});
+        theme = JSON.parse(JSON.stringify(theme));
 
         if (options.theme === 'none' && cast_theme !== null) {
             // It appears that there is no way to set cursor, cursorAccent, and selection
@@ -826,6 +829,7 @@ const remove_terminal_element = function(terminal) {
     terminal.parentElement.removeChild(terminal);
 };
 
+// Returns null on error (after displaying error message).
 const get_options = function() {
     const size = Number.parseInt(document.getElementById('size').value);
     const contrast_gain = Number.parseInt(
@@ -842,7 +846,36 @@ const get_options = function() {
     for (const pos of ['top', 'left', 'bottom', 'right']) {
         shave[pos] = Number.parseInt(document.getElementById('shave_' + pos).value);
     }
-    const theme = document.getElementById('theme').value;
+    let theme = document.getElementById('theme').value;
+    if (theme === 'custom') {
+        const raw = document.getElementById('custom_theme').value.trim();
+        if (!raw) {
+            alert('Custom theme JSON is empty.');
+            return null;
+        }
+        try {
+            theme = JSON.parse(raw);
+        } catch (e) {
+            alert('Invalid custom theme JSON: ' + e.message);
+            return null;
+        }
+        const valid_keys = new Set([
+            'black', 'red', 'green', 'yellow', 'blue', 'purple', 'cyan', 'white',
+            'brightBlack', 'brightRed', 'brightGreen', 'brightYellow', 'brightBlue', 'brightPurple', 'brightCyan', 'brightWhite',
+            'background', 'foreground', 'cursor', 'cursorAccent', 'selection',
+        ]);
+        const hex_re = /^#[0-9a-fA-F]{6}$/;
+        for (const key of Object.keys(theme)) {
+            if (!valid_keys.has(key)) {
+                alert('Invalid custom theme key: ' + key);
+                return null;
+            }
+            if (!hex_re.test(theme[key])) {
+                alert('Invalid hex color for ' + key + ': ' + theme[key]);
+                return null;
+            }
+        }
+    }
     const options = {
         size: size,
         contrast_gain: contrast_gain,
@@ -1019,6 +1052,7 @@ FONT_CANDIDATES.forEach((font) => {
     const theme_element = document.getElementById('theme');
     const themes = Object.keys(THEMES);
     themes.push('none');
+    themes.push('custom');
     const value_and_text = [];
     for (let i = 0; i < themes.length; ++i) {
         value_and_text.push({
@@ -1038,6 +1072,17 @@ FONT_CANDIDATES.forEach((font) => {
             option.selected = true;
         theme_element.appendChild(option);
     }
+}
+
+document.getElementById('theme').addEventListener('change', function() {
+    document.getElementById('custom_theme_row').style.display =
+        this.value === 'custom' ? '' : 'none';
+});
+
+// Dedent the custom theme textarea default value.
+{
+    const textarea = document.getElementById('custom_theme');
+    textarea.value = textarea.value.replace(/^ {28}/gm, '').trim();
 }
 
 // Populate the theme preview grid.
@@ -1155,6 +1200,7 @@ document.getElementById('render_button').onclick = function(e) {
     reader.onload = function() {
         const progress_setter = new ProgressSetter();
         const options = get_options();
+        if (options === null) return;
         const terminal = create_terminal_element();
         const gif_renderer = new GifRenderer(terminal, options, reader.result);
         gif_renderer.oninit = function() {

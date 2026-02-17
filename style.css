@@ -45,6 +45,11 @@ fieldset {
     width: 8ch;
 }
 
+#custom_theme {
+    font-family: monospace;
+    resize: vertical;
+}
+
 /* *************************************************
  * * Details
  * ************************************************* */
